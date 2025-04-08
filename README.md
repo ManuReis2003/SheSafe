@@ -24,8 +24,8 @@ __Gabriela Dias Alves:__ Implementação da interface do usuário ,Desenvolvimen
 * Android Studio
 * Java
 * Banco de dados: MySQL. 
-* Banco de dados: MySQL. 
 * Ferramentas de versionamento: Git e Git Hub.
+   
 
 
 ## Requisitos funcionais: 
@@ -33,8 +33,6 @@ __Gabriela Dias Alves:__ Implementação da interface do usuário ,Desenvolvimen
 * Mapa
 * Definição dos contatos de confiança
 * Área da comunidade.
-
-
 
 
 

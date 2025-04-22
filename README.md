@@ -49,4 +49,11 @@ https://docs.google.com/forms/d/e/1FAIpQLSfWHvPU_aV8_XzOlRNT6WDigAonW3Nv_6tS8RR4
 |Finalização e Apresentação| 01/12/2025     |10/12/2025|Equipe|
 	         
 
+## Diagramas e Fluxogramas 
+
+Duplo Diamante – Design Thinking
+O modelo do Duplo Diamante, metodologia pertencente ao processo de Design Thinking, foi adotado como base metodológica para orientar o processo de levantamento e refinamento de requisitos. Estruturado em quatro fases — Descobrir, Definir, Desenvolver e Entregar. Foram realizadas entrevistas exploratórias na etapa de descoberta e, posteriormente, aplicado um formulário para validação e refinamento das informações.
+
+<img width="488" alt="image" src="https://github.com/user-attachments/assets/3b323f28-233d-4c11-8a28-4e17e8906d37" />
+
 

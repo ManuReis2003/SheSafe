@@ -1,12 +1,13 @@
 # SheSafe
 
+Este é um projeto que está em desenvolvimento por alunas do curso de Análise e Desenvolvimento de Sistemas do CEUB. Descrição e detalhes abaixo.
+
 ## Prototipação 
 Endereço do modelo prototipado na ferramenta Figma: https://www.figma.com/design/ERASOqqB3rcbyV6RQ7atq8/shesafe?node-id=0-1&node-type=canvas&t=igxlTt4l1yORVkR6-0
 
 ### Vídeo demonstrativo do Protótipo
 
 https://github.com/user-attachments/assets/f75259b7-88a9-49a0-bcd4-f08d0521dd0d
-
 
 
 
@@ -87,11 +88,4 @@ A modelagem de banco de dados lógica é uma representação detalhada das entid
 
 A modelagem de banco de dados física detalha a implementação efetiva do banco de dados, considerando aspectos como a definição de tabelas, índices, restrições e normalização. Esta etapa visa otimizar a estrutura do banco de dados para garantir eficiência no armazenamento e no acesso aos dados, levando em conta o desempenho e as características específicas do sistema e do ambiente de execução.
 ![image](https://github.com/user-attachments/assets/16dfa7cb-7b39-4219-af3d-e744d0f48d22)
-
-
-
-
-![image](https://github.com/user-attachments/assets/341a5949-5560-4f77-8e14-7ebbf373774e)
-
-
 

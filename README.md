@@ -1,5 +1,15 @@
 # SheSafe
 
+## Prototipação 
+Endereço do modelo prototipado na ferramenta Figma: https://www.figma.com/design/ERASOqqB3rcbyV6RQ7atq8/shesafe?node-id=0-1&node-type=canvas&t=igxlTt4l1yORVkR6-0
+
+### Vídeo demonstrativo do Protótipo
+
+https://github.com/user-attachments/assets/f75259b7-88a9-49a0-bcd4-f08d0521dd0d
+
+
+
+
 ## Descrição do Projeto
 
 O projeto She Safe consiste no desenvolvimento de um aplicativo móvel que oferece diversas funcionalidades focadas na segurança e empoderamento das mulheres. Possui o objetivo de oferecer suporte e informações às mulheres que estão em situações vulneráveis ou não. Será aplicado principalmente em áreas urbanas, onde as questões de segurança são mais prevalentes e os casos de violência são elevados. O aplicativo visa promover a segurança e o bem-estar das usuárias, fornecendo recursos e ferramentas que as ajudam a se proteger em situações de risco e a se conectar com outras mulheres para apoio mútuo. 
@@ -80,8 +90,7 @@ A modelagem de banco de dados física detalha a implementação efetiva do banco
 
 
 
-##Prototipação 
-endereço do modelo prototipado na ferramenta Figma: https://www.figma.com/design/ERASOqqB3rcbyV6RQ7atq8/shesafe?node-id=0-1&node-type=canvas&t=igxlTt4l1yORVkR6-0
+
 ![image](https://github.com/user-attachments/assets/341a5949-5560-4f77-8e14-7ebbf373774e)
 
 

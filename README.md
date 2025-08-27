@@ -52,12 +52,12 @@ Endereço do link do formulário:
 https://docs.google.com/forms/d/e/1FAIpQLSfWHvPU_aV8_XzOlRNT6WDigAonW3Nv_6tS8RR4N-ZGDeNC6w/viewform?usp=header
 
 
-| Etapa                    | Data Inicial   | Data Final | Responsável|
-| ------------------------ |:--------------:|-----------|--------------|
-| Planejamento e Definição | 01/02/2024     |04/07/2025|Equipe|
-| Desenvolvimento          | 28/07/2025     |30/11/2025|Equipe|
-|Testes e Validação        | 01/10/2025     |30/10/2025|Equipe|
-|Finalização e Apresentação| 01/12/2025     |10/12/2025|Equipe|
+| Etapa                     | Data Inicial   | Data Final | Responsável|
+| ------------------------  |:--------------:|-----------|--------------|
+| Planejamento e Definição  | 01/02/2024     |27/08/2025 |Equipe|
+| Desenvolvimento           | 03/09/2025     |18/11/2025 |Equipe|
+| Testes e Validação        | 18/11/2025     |02/12/2025 |Equipe|
+| Finalização e Apresentação| 02/12/2025     |03/12/2025 |Equipe|
 	         
 
 ## Diagramas e Fluxogramas 

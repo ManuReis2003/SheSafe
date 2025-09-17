@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SheSafe Storybook - React Native</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --she-safe-red: #d9534f;
+            --she-safe-orange: #d28c3a;
+            --she-safe-yellow: #f0c24e;
+            --she-safe-green: #28a745;
+            --she-safe-burgundy: #801F33;
+            --she-safe-input-bg: #C7B0B2;
+            --she-safe-dark: #343a40;
+            --she-safe-light: #ffffff;
+            --she-safe-gray-bg: #f8f9fa;
+            --she-safe-toast-bg: #E9E9E9;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--she-safe-light);
+            color: var(--she-safe-dark);
+        }
+        .sidebar {
+            background-color: var(--she-safe-gray-bg);
+            padding-top: 20px;
+            height: 100vh;
+            position: fixed; top: 0; left: 0; width: 250px;
+            border-right: 1px solid #dee2e6;
+        }
+        .sidebar .nav-link {
+            color: var(--she-safe-dark);
+            padding: 10px 15px; margin-bottom: 5px;
+            border-radius: 5px; transition: background-color 0.2s;
+        }
+        .sidebar .nav-link:hover { background-color: rgba(0, 0, 0, 0.05); }
+        .sidebar .nav-link.active {
+            background-color: var(--she-safe-red);
+            color: var(--she-safe-light);
+        }
+        .main-content { margin-left: 250px; padding: 20px; }
+        
+        pre[class*="language-"] {
+            padding: 15px !important; margin-top: 10px !important;
+            border-radius: 8px; font-size: 0.9em;
+        }
+
+        /* Estilos para exemplos visuais */
+        .toast-example {
+            background-color: var(--she-safe-toast-bg); color: var(--she-safe-dark);
+            padding: 20px 25px; border-radius: 20px; font-size: 1.1rem;
+            text-align: center; max-width: 350px; margin-bottom: 1rem;
+        }
+        .toast-example strong { font-weight: 800; text-transform: uppercase; }
+
+        .modal-example {
+            background-color: white; padding: 20px; border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); max-width: 300px; text-align: center;
+        }
+        .modal-example-buttons { display: flex; justify-content: space-around; margin-top: 20px; }
+        .modal-example-buttons button {
+            border: none; border-radius: 20px; padding: 8px 30px;
+            color: white; font-weight: bold; background-color: #8B0000;
+        }
+
+        .form-example-container {
+            background-color: #fff; border-radius: 16px; padding: 30px;
+            max-width: 350px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .form-input-example {
+            background-color: var(--she-safe-input-bg); color: white; border: none;
+            border-radius: 50px; padding: 15px; width: 100%; margin-bottom: 15px;
+            font-size: 1.1rem; font-weight: bold; text-align: center;
+        }
+        .form-input-example::placeholder { color: white; opacity: 1; }
+
+        .btn-action-primary {
+            background-color: var(--she-safe-burgundy); color: white; border: none;
+            border-radius: 50px; padding: 15px; width: 100%;
+            font-size: 1.2rem; font-weight: 500;
+        }
+        .link-action-secondary {
+            color: var(--she-safe-burgundy); text-decoration: underline; background: none;
+            border: none; font-size: 1rem; margin-top: 20px;
+        }
+        .footer-info-text-example {
+            font-size: 0.8rem; color: #6c757d; margin-top: 25px; line-height: 1.5;
+        }
+        .btn-she-safe-red {
+            background-color: var(--she-safe-red);
+            color: var(--she-safe-light);
+            border: none;
+        }
+        .btn-she-safe-red:hover {
+            background-color: #c0392b; /* Um tom mais escuro */
+            color: var(--she-safe-light);
+        }
+
+        .btn-she-safe-orange {
+            background-color: var(--she-safe-orange);
+            color: var(--she-safe-light);
+            border: none;
+        }
+        .btn-she-safe-orange:hover {
+            background-color: #bf7727; /* Um tom mais escuro */
+            color: var(--she-safe-light);
+        }
+
+        .btn-she-safe-yellow {
+            background-color: var(--she-safe-yellow);
+            color: var(--she-safe-dark); /* Texto escuro para contraste */
+            border: none;
+        }
+        .btn-she-safe-yellow:hover {
+            background-color: #e6b333; /* Um tom mais escuro */
+            color: var(--she-safe-dark);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="p-4 text-center">
+            <h2 class="text-2xl font-bold">SheSafe Storybook</h2>
+            <p class="text-sm text-gray-600">React Native Edition</p>
+        </div>
+        <nav class="nav flex-column mt-4">
+            <a class="nav-link active" href="#introducao">Introdução</a>
+            <a class="nav-link" href="#paleta-cores">Paleta de Cores</a>
+            <a class="nav-link" href="#tipografia">Tipografia</a>
+            <a class="nav-link" href="#botoes-principais">Botões Principais</a>
+            <a class="nav-link" href="#notificacoes-modais">Notificações e Modais</a>
+            <a class="nav-link" href="#formularios">Formulários e Ações</a>
+            <a class="nav-link" href="#textos-informativos">Textos Informativos</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="container-fluid">
+            <h1 class="text-4xl font-extrabold mb-4">Documentação de Design SheSafe</h1>
+            
+            <section id="introducao" class="mt-8 pb-8 border-b border-gray-200">
+                <h2 class="text-3xl font-bold mb-4">Introdução</h2>
+                <p>Este Storybook serve como uma referência viva para desenvolvedores e designers. Como o aplicativo será desenvolvido em <strong>React Native</strong>, todos os exemplos de código aqui presentes seguirão os padrões e a sintaxe do React Native.</p>
+            </section>
+
+            <section id="paleta-cores" class="mt-8 pb-8 border-b border-gray-200">
+                <h2 class="text-3xl font-bold mb-4">Paleta de Cores</h2>
+<pre><code class="language-js">
+export const colors = {
+  red: '#d9534f',  // Cor mensagem
+  orange: '#d28c3a',  // Cor mensagem
+  yellow: '#f0c24e',  // Cor mensagem
+  green: '#28a745', // Cor mensagem de sucesso
+  burgundy: '#801F33',
+  inputBackground: '#C7B0B2',// Cor do fundo
+  inputText: '#FFFFFF',  // Cor texto
+  dark: '#343a40',  // Cor base
+  light: '#ffffff', // Cor base
+  grayText: '#6c757d', // Cor do texto
+  toastBg: '#E9E9E9',  // Cor toast
+};
+</code></pre>
+            </section>
+
+            <section id="tipografia" class="mt-8 pb-8 border-b border-gray-200">
+                <h2 class="text-3xl font-bold mb-4">Tipografia</h2>
+                <p>A combinação de fontes recomendada para manter a identidade visual do aplicativo é:</p>
+                <ul class="list-disc list-inside">
+                    <li><strong>Logo & Títulos de Destaque:</strong> <strong class="Playfair">Playfair Display</strong></li>
+                    <li><strong>Interface Geral (UI):</strong> <strong class="Montserrat">Montserrat</strong></li>
+                </ul>
+            </section>
+
+            <section id="tipos-botoes" class="mt-8 pb-8 border-b border-gray-200">
+                <h2 class="text-3xl font-bold mb-4 text-she-safe-dark">Tipos de Botões</h2>
+                <p>Os botões são um elemento crucial para a interação rápida no SheSafe. Mantemos um padrão claro para cada tipo de ação.</p>
+
+                <div class="mt-4">
+                    <button class="btn btn-lg btn-she-safe-red">Emergência</button>
+                    <div class="code-snippet">
+                     Código:   &lt;button class="btn btn-lg btn-she-safe-red"&gt;Emergência&lt;/button&gt;
+                    </div>
+                    <button class="btn btn-lg btn-she-safe-orange">Estou em risco</button>
+                    <div class="code-snippet">
+                    Código:   &lt;button class="btn btn-lg btn-she-safe-orange"&gt;Estou em risco&lt;/button&gt;
+                    </div>
+                    <button class="btn btn-lg btn-she-safe-yellow">Acompanhe-me</button>
+                    <div class="code-snippet">
+                    Código:  &lt;button class="btn btn-lg btn-she-safe-yellow"&gt;Acompanhe-me&lt;/button&gt;
+                    </div>
+
+                </section>
+            
+            <section id="notificacoes-modais" class="mt-8 pb-8 border-b border-gray-200">
+                <h2 class="text-3xl font-bold mb-4">Notificações e Modais</h2>
+                <p>Componentes para feedback ao usuário, como notificações (toasts) e diálogos de confirmação (modais).</p>
+
+                <h3 class="text-2xl font-bold mt-6 mb-3">1. Notificações (Toasts)</h3>
+                <p class="mb-4">Usadas para mensagens informativas e de confirmação que aparecem temporariamente.</p>
+
+                <div class="toast-example">
+                    Uma notificação de <strong style="color: var(--she-safe-red);">EMERGÊNCIA</strong> foi enviada para seus contatos definidos!
+                </div>
+                <div class="toast-example">
+                    Uma notificação de <strong style="color: var(--she-safe-orange);">RISCO</strong> foi enviada para seus contatos definidos!
+                </div>
+                <div class="toast-example">
+                    <strong style="color: var(--she-safe-green);">CONTATO</strong> cadastrado com sucesso!
+                </div>
+
+                <div class="p-4 bg-gray-100 rounded-lg mt-2">
+                    <h4 class="font-bold">Resumo do Estilo:</h4>
+                    <ul class="list-disc list-inside text-sm">
+                        <li><strong>Fundo:</strong> Cinza claro (`#E9E9E9`).</li>
+                        <li><strong>Fonte:</strong> Montserrat, cor escura (`#343a40`).</li>
+                        <li><strong>Destaque:</strong> Texto em caixa alta, negrito, com a cor correspondente à ação (vermelho, laranja, verde).</li>
+                        <li><strong>Bordas:</strong> Arredondadas (aprox. 20px).</li>
+                    </ul>
+                </div>
+
+                <h4 class="text-xl font-bold mt-4 mb-3">Código React Native (Componente Toast)</h4>
+<pre><code class="language-jsx">
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { colors } from '../constants/colors';
+
+// A implementação real de um "toast" geralmente requer uma biblioteca
+// ou um Provider no topo da árvore de componentes do app.
+
+const ToastView = ({ text, highlightText, highlightColor }) => {
+  return (
+    &lt;View style={styles.toastContainer}&gt;
+      &lt;Text style={styles.toastText}&gt;
+        {text}
+        &lt;Text style={{ color: highlightColor, fontWeight: 'bold' }}&gt;
+          {` ${highlightText.toUpperCase()} `}
+        &lt;/Text&gt;
+        {/* Adicione o resto da mensagem aqui se houver */}
+      &lt;/Text&gt;
+    &lt;/View&gt;
+  );
+};
+
+const styles = StyleSheet.create({
+  toastContainer: {
+    backgroundColor: colors.toastBg,
+    paddingVertical: 20, paddingHorizontal: 25,
+    borderRadius: 20, margin: 10, alignItems: 'center',
+  },
+  toastText: {
+    color: colors.dark, fontSize: 16, textAlign: 'center',
+    fontFamily: 'Montserrat-Regular', // Exemplo de uso da fonte
+  },
+});
+</code></pre>
+
+                <h3 class="text-2xl font-bold mt-8 mb-3">2. Modal de Confirmação</h3>
+                <p class="mb-4">Usado para ações destrutivas que requerem confirmação explícita.</p>
+
+                <div class="modal-example">
+                    <p class="text-lg">Tem certeza que deseja excluir esse contato?</p>
+                    <div class="modal-example-buttons">
+                        <button>SIM</button>
+                        <button>NÃO</button>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-100 rounded-lg mt-4">
+                    <h4 class="font-bold">Resumo do Estilo:</h4>
+                    <ul class="list-disc list-inside text-sm">
+                        <li><strong>Fundo:</strong> Branco (`#FFFFFF`) com sombra.</li>
+                        <li><strong>Fonte:</strong> Montserrat, cor escura (`#343a40`).</li>
+                        <li><strong>Botões:</strong> Fundo vinho (`#801F33`), texto branco, bordas arredondadas.</li>
+                        <li><strong>Bordas:</strong> Arredondadas (aprox. 16px).</li>
+                    </ul>
+        
+                <section id="formularios" class="mt-8 pb-8 border-b border-gray-200">
+                    <h2 class="text-3xl font-bold mb-4">Formulários e Ações</h2>
+                    <p>Estilos padronizados para inputs, botões e links das telas de Login/Cadastro.</p>
+
+                <h3 class="text-2xl font-bold mt-6 mb-3">Exemplo Visual</h3>
+                <div class="form-example-container">
+                    <h3 class="text-2xl font-bold mb-4">Cadastro usuária</h3>
+                    <input type="text" class="form-input-example" placeholder="Nome">
+                    <input type="email" class="form-input-example" placeholder="E-mail">
+                    <button class="btn-action-primary">Cadastrar</button>
+                    <button class="link-action-secondary">Login</button>
+                </section>
+                
+            <section id="textos-informativos" class="mt-8 pb-8">
+                <h2 class="text-3xl font-bold mb-4">Textos Informativos</h2>
+                <p>Padrão para textos de rodapé, avisos ou informações gerais que aparecem nas telas.</p>
+
+                <h3 class="text-2xl font-bold mt-6 mb-3">Exemplo Visual</h3>
+                <div class="form-example-container">
+                    <p class="footer-info-text-example">
+                        Atenção! O aplicativo SheSafe é exclusivamente destinado às mulheres. Saiba mais sobre o SheSafe nas redes sociais. @SheSafe
+                    </p>
+                </div>
+
+                <div class="p-4 bg-gray-100 rounded-lg mt-4">
+                    <h4 class="font-bold">Resumo do Estilo:</h4>
+                    <ul class="list-disc list-inside text-sm">
+                        <li><strong>Fonte:</strong> Pequena (aprox. 12px), cor cinza (`#6c757d`).</li>
+                        <li><strong>Alinhamento:</strong> Centralizado.</li>
+                        <li><strong>Espaçamento:</strong> Ideal para boa legibilidade, com margens para não tocar as bordas.</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script>
+        // Script de navegação da sidebar
+        document.querySelectorAll('.sidebar .nav-link').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+        // Script para ativar link na sidebar ao rolar
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.sidebar .nav-link');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === `#${entry.target.id}`) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, { threshold: 0.3 });
+        sections.forEach(section => observer.observe(section));
+    </script>
+</body>
+</html>

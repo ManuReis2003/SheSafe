@@ -1,0 +1,15 @@
+{
+  "name": "shesafe",
+  "version": "1.0.0",
+  "description": "Este é um projeto que está em desenvolvimento por alunas do curso de Análise e Desenvolvimento de Sistemas do CEUB. Descrição e detalhes abaixo.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "expo": "^54.0.12"
+  }
+}

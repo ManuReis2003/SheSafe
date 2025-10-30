@@ -32,18 +32,20 @@ __Gabriela Dias Alves:__ Implementação da interface do usuário ,Desenvolvimen
 ## Escopo e Requisitos do Projeto
 
 ### Tecnologias utilizadas:
-* Android Studio
-* Java
+* Vs Code
+* JavaScript
 * Banco de dados: MySQL. 
 * Ferramentas de versionamento: Git e Git Hub.
    
 
 
 ## Requisitos funcionais: 
-* Botão de acompanhamento
+
+* Botões de Acompanhamento 
 * Mapa
-* Definição dos contatos de confiança
-* Área da comunidade.
+* Tela de contatos de confiança
+* Aba de notificações
+  
 
 ## Levantamento de requisitos
 O levantamento de requisitos deste projeto foi conduzido em duas fases. A primeira consistiu na realização de entrevistas semiestruturadas, com o intuito de compreender as necessidades iniciais dos usuários e levantar informações qualitativas relevantes. Na segunda etapa, com foco no refinamento dos requisitos, foi aplicado um formulário online. Participaram dessa fase mulheres de diferentes faixas etárias e classes sociais, o que possibilitou uma coleta de dados mais abrangente e representativa do público-alvo.

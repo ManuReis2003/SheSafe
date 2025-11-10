@@ -1,24 +1,46 @@
-import React, { useState } from 'react';
-import { Platform, SafeAreaView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-// Importação essencial para navegação com Expo Router
 import { useRouter } from 'expo-router';
-import Svg, { Path } from 'react-native-svg';
+import { useState } from 'react';
+import { ActivityIndicator, Platform, SafeAreaView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import Svg, { Line, Path } from 'react-native-svg'; // Adicionado 'Line' para o ícone EyeOff
+
+// ================================================================
+// 1. IMPORTAR AS FUNÇÕES DO FIREBASECONFIG.JS
+// ================================================================
+import { auth, createUserWithEmailAndPassword, db, doc, setDoc } from './firebaseConfig';
+// ================================================================
+
+
+// ================================================================
+// 2. ÍCONES DE VISIBILIDADE DE SENHA (NOVOS)
+// ================================================================
+const EyeIcon = () => (
+    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></Path>
+        <Path d="M12 15a3 3 0 100-6 3 3 0 000 6z"></Path>
+    </Svg>
+);
+
+const EyeOffIcon = () => (
+    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"></Path>
+        <Line x1="1" y1="1" x2="23" y2="23"></Line>
+    </Svg>
+);
+// ================================================================
+
 
 // Componente do Pop-up de Sucesso (mantido o mesmo)
 const SuccessModal = ({ isVisible, onClose, router }) => {
-    // Componente de modal simples que aparece após o cadastro ser concluído com sucesso.
     if (!isVisible) return null;
-
     return (
         <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
                 <Text style={styles.modalText}>Cadastro realizado.</Text>
                 <Text style={styles.modalWelcome}>Bem-vinda ao <Text style={{ fontWeight: 'bold', color: '#6a0a25' }}>SheSafe!</Text></Text>
-                {/* Botão para continuar e navegar para a tela principal (Login, por enquanto) */}
                 <TouchableOpacity 
                     onPress={() => {
                         onClose();
-                        router.replace('/'); // Navega para a rota inicial (Login)
+                        router.replace('/'); 
                     }} 
                     style={styles.modalButton}
                 >
@@ -31,7 +53,6 @@ const SuccessModal = ({ isVisible, onClose, router }) => {
 
 // Este é o componente da tela de Cadastro (Signup)
 export default function SignupScreen() {
-    // Inicializa o roteador do Expo Router
     const router = useRouter(); 
 
     // Estados para armazenar os dados do formulário
@@ -39,73 +60,91 @@ export default function SignupScreen() {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
-    const [modalVisible, setModalVisible] = useState(false); // Estado para controlar a visibilidade do pop-up
+    
+    // ================================================================
+    // 3. NOVOS ESTADOS PARA CONFIRMAÇÃO E VISIBILIDADE
+    // ================================================================
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    // ================================================================
+
+    const [modalVisible, setModalVisible] = useState(false); 
+    const [loading, setLoading] = useState(false); 
 
     // Função que será chamada quando o botão "Cadastrar" for pressionado
     const handleSignup = async () => {
-        // Validação básica
-        if (!name || !email || !phone || !password) {
+        // ================================================================
+        // 4. ATUALIZAÇÃO DA VALIDAÇÃO
+        // ================================================================
+        // Validação básica (incluindo o novo campo)
+        if (!name || !email || !phone || !password || !confirmPassword) {
             alert('Atenção: Por favor, preencha todos os campos.');
             return;
         }
 
-        // --- INÍCIO DA INTEGRAÇÃO COM FIREBASE AUTHENTICATION E FIRESTORE ---
-        // AQUI você irá adicionar a lógica real para criar o usuário no Firebase Auth
-        // e salvar os dados adicionais no Firestore.
+        // Validação de Senha (verificar se são iguais)
+        if (password !== confirmPassword) {
+            alert('Erro: As senhas não conferem.');
+            return;
+        }
 
-        /* try {
+        // Validação de E-mail
+        const emailRegex = /\S+@\S+\.\S+/;
+        if (!emailRegex.test(email)) {
+            alert('Atenção: Por favor, insira um e-mail válido (ex: usuaria@dominio.com).');
+            return;
+        }
+        
+        // ================================================================
+
+        
+        setLoading(true);
+
+        try {
             // 1. Crie o usuário no Firebase Authentication
-            // const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            // const user = userCredential.user;
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
 
-            // 2. Salve os dados adicionais no Firestore
-            // await setDoc(doc(db, "users", user.uid), {
-            //     name: name,
-            //     phone: phone,
-            //     email: email
-            // });
+            // 2. Salve os dados adicionais no Firestore (usando campos em português)
+            await setDoc(doc(db, "usuarios", user.uid), {
+                nome: name,
+                telefone: phone,
+                email: email
+            });
 
-            // Se o cadastro for bem-sucedido:
-            // setModalVisible(true); 
+            setModalVisible(true); 
             
         } catch (error) {
-            console.error("Erro no cadastro:", error);
-            alert("Erro ao cadastrar. Tente novamente.");
+            console.error("Erro no cadastro:", error.code, error.message);
+            if (error.code === 'auth/email-already-in-use') {
+                alert('Erro: Este e-mail já está em uso.');
+            } else if (error.code === 'auth/weak-password') {
+                alert('Erro: A senha deve ter pelo menos 6 caracteres.');
+            } else {
+                alert("Erro ao cadastrar. Tente novamente.");
+            }
+        } finally {
+            setLoading(false);
         }
-        */
-
-        // SIMULAÇÃO DE SUCESSO (REMOVER APÓS INTEGRAR COM FIREBASE)
-        console.log('Dados simulados:', { name, email, phone, password });
-        setModalVisible(true);
-        // FIM DA SIMULAÇÃO DE SUCESSO
-        
-        // --- FIM DA INTEGRAÇÃO COM FIREBASE ---
     };
 
-    // Função para navegar para a tela de Login
     const navigateToLogin = () => {
-        // USANDO EXPO ROUTER: Navega para a rota inicial que definimos como Login
         router.replace('/'); 
     };
 
-    // A cor principal (vinho/borgonha) e a cor secundária (rosa claro/pêssego) do protótipo
     const mainColor = '#6a0a25'; 
     const secondaryColor = '#d9c7d0'; 
 
     return (
-        // SafeAreaView e Platform/StatusBar para garantir que o conteúdo não fique sob a barra de status do celular.
         <SafeAreaView style={styles.safeArea}>
-            {/* O ScrollView (ou apenas View com altura) é ajustado para permitir rolagem se necessário */}
             <View style={styles.container}>
                 
-                {/* Ícone do Cadeado (Desenho em SVG - precisa do react-native-svg instalado) */}
                 <View style={[styles.iconContainer, { marginTop: 40 }]}>
                     <Svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke={mainColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <Path d="M12 2C9.243 2 7 4.243 7 7v3h-1c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2h-1V7c0-2.757-2.243-5-5-5zm0 2c1.654 0 3 1.346 3 3v3H9V7c0-1.654 1.346-3 3-3zm0 13c-1.104 0-2-.896-2-2s.896-2 2-2 2 .896 2 2-.896 2-2 2z"/>
                     </Svg>
                 </View>
 
-                {/* Título da Tela */}
                 <Text style={styles.title}>Cadastro usuária</Text>
                 <View style={styles.divider} />
 
@@ -131,20 +170,76 @@ export default function SignupScreen() {
                     onChangeText={setPhone}
                     keyboardType="phone-pad"
                 />
-                <TextInput
-                    style={[styles.input, { backgroundColor: secondaryColor }]}
-                    placeholder="Senha"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry // Esconde o texto digitado
-                />
+                
+                {/* Campo Senha com Ícone */}
+                <View style={styles.passwordWrapper}>
+                    <TextInput
+                        style={[
+                            styles.input, 
+                            { 
+                                backgroundColor: secondaryColor, 
+                                textAlign: 'left', 
+                                paddingLeft: 20, 
+                                paddingRight: 60, 
+                                marginVertical: 0 
+                            }
+                        ]}
+                        placeholder="Senha"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword} 
+                    />
+                    <TouchableOpacity 
+                        style={styles.eyeIcon} 
+                        onPress={() => setShowPassword(!showPassword)}
+                    >
+                        {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    </TouchableOpacity>
+                </View>
+
+                {/* Texto de Ajuda (Novo) */}
+                <Text style={styles.passwordHelper}>
+                    A senha deve ter pelo menos 6 caracteres.
+                </Text>
+
+                {/* Campo Confirmar Senha com Ícone (Novo) */}
+                <View style={styles.passwordWrapper}>
+                    <TextInput
+                        style={[
+                            styles.input, 
+                            { 
+                                backgroundColor: secondaryColor, 
+                                textAlign: 'left', 
+                                paddingLeft: 20, 
+                                paddingRight: 60,
+                                marginVertical: 0 
+                            }
+                        ]}
+                        placeholder="Confirme sua senha"
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity 
+                        style={styles.eyeIcon} 
+                        onPress={() => setShowPassword(!showPassword)}
+                    >
+                        {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    </TouchableOpacity>
+                </View>
+
 
                 {/* Botão de Cadastro */}
                 <TouchableOpacity 
                     style={[styles.button, { backgroundColor: mainColor }]}
                     onPress={handleSignup}
+                    disabled={loading}
                 >
-                    <Text style={styles.buttonText}>Cadastrar</Text>
+                    {loading ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                        <Text style={styles.buttonText}>Cadastrar</Text>
+                    )}
                 </TouchableOpacity>
 
                 {/* Link para Login */}
@@ -153,20 +248,18 @@ export default function SignupScreen() {
                     onPress={navigateToLogin}
                 >
                     <Text style={styles.loginLinkText}>Login</Text>
-                    
-                    {/* --- INÍCIO DA INTEGRAÇÃO COM TELA DE LOGIN DA COLEGA ---
-                    AQUI o Expo Router fará o trabalho. O 'router.replace("/")' acima é a integração.
-                    --- FIM DA INTEGRAÇÃO COM TELA DE LOGIN DA COLEGA --- */}
-
                 </TouchableOpacity>
 
-                {/* Mensagem legal */}
+                {/* ================================================================ */}
+                {/* CORREÇÃO DO RODAPÉ (REMOVIDO POSITION ABSOLUTE) */}
+                {/* ================================================================ */}
                 <View style={styles.footerTextContainer}>
                     <Text style={styles.footerText}>
                         Atenção! O aplicativo SheSafe é exclusivamente destinado às mulheres. Saiba mais sobre o SheSafe nas redes sociais. 
                     </Text>
                     <Text style={styles.footerHandle}>@SheSafe</Text>
                 </View>
+                {/* ================================================================ */}
 
             </View>
 
@@ -176,27 +269,24 @@ export default function SignupScreen() {
                 onClose={() => setModalVisible(false)} 
                 router={router}
             />
-
         </SafeAreaView>
     );
 }
 
-// Estilos de Componentes (Mantendo a estética do protótipo)
+// Estilos de Componentes
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        // Define um fundo escuro para simular a borda do celular (como no protótipo)
         backgroundColor: '#000', 
     },
     container: {
         flex: 1,
-        // CORREÇÃO: Remove justify-content: center para evitar corte
         alignItems: 'center',
         backgroundColor: '#fff', 
         paddingHorizontal: 30, 
         paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 20 : 20, 
-        // CORREÇÃO: Adiciona padding extra para o rodapé e rolagem
-        paddingBottom: 150,
+        // PaddingBottom aumentado para garantir espaço para o rodapé em fluxo normal
+        paddingBottom: 40, 
     },
     iconContainer: {
         marginBottom: 10,
@@ -217,9 +307,9 @@ const styles = StyleSheet.create({
         width: '100%',
         paddingVertical: 14,
         paddingHorizontal: 20,
-        borderRadius: 30, // Bordas arredondadas do protótipo
+        borderRadius: 30, 
         fontSize: 18,
-        marginVertical: 10,
+        marginVertical: 10, // Mantém a margem para os inputs normais
         textAlign: 'center',
         color: '#333',
         shadowColor: '#000',
@@ -228,16 +318,40 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
     },
+    passwordWrapper: {
+        width: '100%',
+        position: 'relative', 
+        justifyContent: 'center',
+        marginVertical: 10, 
+    },
+    eyeIcon: {
+        position: 'absolute',
+        right: 15, 
+        padding: 10, 
+        height: '100%', 
+        justifyContent: 'center',
+    },
+    passwordHelper: {
+        fontSize: 13,
+        color: '#555',
+        textAlign: 'left',
+        width: '100%',
+        paddingLeft: 10, 
+        marginTop: -5, 
+        marginBottom: 10, 
+    },
     button: {
-        width: '80%', // Botão Cadastrar mais largo e centralizado
+        width: '80%', 
         paddingVertical: 15,
         borderRadius: 30,
-        marginTop: 30,
+        marginTop: 20, 
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 5.46,
         elevation: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     buttonText: {
         color: 'white',
@@ -247,7 +361,8 @@ const styles = StyleSheet.create({
     },
     loginLink: {
         marginTop: 20,
-        marginBottom: 40,
+        // marginBottom diminuído para dar espaço ao rodapé
+        marginBottom: 20, 
     },
     loginLinkText: {
         color: '#6a0a25',
@@ -255,14 +370,19 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         textDecorationLine: 'underline',
     },
+    // ================================================================
+    // ESTILO DO RODAPÉ CORRIGIDO
+    // ================================================================
     footerTextContainer: {
-        // Posicionado absoluto para ficar no final do container principal
-        position: 'absolute', 
-        bottom: 20,
+        // position: 'absolute', // REMOVIDO
+        // bottom: 20,          // REMOVIDO
         width: '100%',
         alignItems: 'center',
         paddingHorizontal: 10,
+        // Adiciona margem para separá-lo do link de Login
+        marginTop: 10, 
     },
+    // ================================================================
     footerText: {
         fontSize: 12,
         color: '#666',
@@ -274,14 +394,14 @@ const styles = StyleSheet.create({
         color: '#6a0a25',
         marginTop: 2,
     },
-    // Estilos do Modal (Pop-up de Sucesso)
+    // Estilos do Modal (Sem alterações)
     modalOverlay: {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
-        height: 150, // Altura do pop-up
-        backgroundColor: 'rgba(255, 255, 255, 0.95)', // Fundo claro semitransparente
+        height: 150, 
+        backgroundColor: 'rgba(255, 255, 255, 0.95)', 
         alignItems: 'center',
         justifyContent: 'center',
         padding: 20,
@@ -295,7 +415,7 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         alignItems: 'center',
-        marginTop: 40, // Desce o conteúdo para não ficar sob o notch/barra de status
+        marginTop: 40, 
     },
     modalText: {
         fontSize: 20,

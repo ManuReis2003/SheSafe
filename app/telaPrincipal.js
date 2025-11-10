@@ -7,6 +7,12 @@ import {
 // O Svg nos permite desenhar os ícones diretamente no código
 import Svg, { Path } from 'react-native-svg';
 
+// 1. IMPORTAÇÃO DO ROUTER -> para levar até as outras telas
+// ================================================================
+import { useRouter } from 'expo-router';
+// ================================================================
+
+
 // --- COMPONENTES DE ÍCONES (SVG) ---
 // Para não depender de arquivos externos, desenhamos os ícones aqui.
 
@@ -46,8 +52,17 @@ const LocationIcon = ({ focused }) => (
 );
 
 
-// --- COMPONENTE PRINCIPAL DA TELA ---
-export default function App() {
+// --- COMPONENTE PRINCIPAL DA TELA --- subtituido pela funcao abaixo para linkar ao mapa
+//export default function App() {
+
+export default function TelaPrincipal() { 
+
+  // ================================================================
+  // 2. INICIALIZAR O ROUTER
+  // ================================================================
+  const router = useRouter();
+  // ================================================================
+
 
   // --- FUNÇÕES DE ALERTA ---
   // Cada botão principal chama uma dessas funções ao ser pressionado.
@@ -75,51 +90,61 @@ export default function App() {
   };
 
   // --- RENDERIZAÇÃO DA TELA ---
-  return (
-    // SafeAreaView garante que o conteúdo não fique sob a barra de status ou notch
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-
-      {/* Container principal que centraliza o conteúdo */}
-      <View style={styles.mainContent}>
-        {/* Logo e Nome do App */}
-        <View style={styles.logoContainer}>
-          <LockIcon />
-          <Text style={styles.appName}>SheSafe</Text>
-        </View>
-
-        {/* Container dos Botões de Ação */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={[styles.button, styles.emergenciaButton]} onPress={handleEmergencia}>
-            <Text style={styles.buttonText}>Emergência</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.button, styles.riscoButton]} onPress={handleRisco}>
-            <Text style={styles.buttonText}>Estou em risco</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.button, styles.acompanheButton]} onPress={handleAcompanhamento}>
-            <Text style={styles.buttonText}>Acompanhe-me</Text>
-          </TouchableOpacity>
-        </View>
+return (
+  // SafeAreaView garante que o conteúdo não fique sob a barra de status ou notch
+  <SafeAreaView style={styles.container}>
+    <StatusBar barStyle="dark-content" />
+    {/* Container principal que centraliza o conteúdo */}
+    <View style={styles.mainContent}>
+      {/* Logo e Nome do App */}
+      <View style={styles.logoContainer}>
+        <LockIcon />
+        <Text style={styles.appName}>SheSafe</Text>
       </View>
-
-      {/* Barra de Navegação Inferior */}
-      <View style={styles.navBar}>
-        <TouchableOpacity style={styles.navButton} onPress={() => Alert.alert("Navegação", "Indo para a tela inicial.")}>
-          <HomeIcon focused={true} />
+      {/* Container dos Botões de Ação */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={[styles.button, styles.emergenciaButton]} onPress={handleEmergencia}>
+          <Text style={styles.buttonText}>Emergência</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} onPress={() => Alert.alert("Navegação", "Indo para a tela de perfil.")}>
-          <UserIcon />
+        <TouchableOpacity style={[styles.button, styles.riscoButton]} onPress={handleRisco}>
+          <Text style={styles.buttonText}>Estou em risco</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} onPress={() => Alert.alert("Navegação", "Indo para a tela de contatos.")}>
-          <SmallLockIcon />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton} onPress={() => Alert.alert("Navegação", "Indo para a tela de mapa.")}>
-          <LocationIcon />
+        <TouchableOpacity style={[styles.button, styles.acompanheButton]} onPress={handleAcompanhamento}>
+          <Text style={styles.buttonText}>Acompanhe-me</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
+          {/* Barra de Navegação Inferior */}
+          <View style={styles.navBar}>
+              <TouchableOpacity style={styles.navButton} onPress={() => Alert.alert("Navegação", "Indo para a tela inicial.")}>
+                  <HomeIcon focused={true} />
+              </TouchableOpacity>
+
+              {/* 
+              <TouchableOpacity style={styles.navButton} onPress={() => Alert.alert("Navegação", "Indo para a tela de perfil.")}>
+                  <UserIcon />
+              </TouchableOpacity>
+              */}
+
+              {/*Lugar na barra de navegacao inferior que leva a tela de cadastro dos contatos de confianca quando clica no "icone de pessoa" */}
+
+              <TouchableOpacity style={styles.navButton} onPress={() => router.push('/contatos')}>
+                  <UserIcon />
+              </TouchableOpacity>
+              {/* ================================================================ */}
+              {/* 3. ALTERAR O ONPRESS DO BOTÃO DE MAPA */}
+              {/* ================================================================ */}
+              <TouchableOpacity 
+                  style={styles.navButton} 
+                  // Substituímos o Alert.alert pela navegação real
+                  onPress={() => router.push('/mapa')}
+              >
+                  <LocationIcon />
+              </TouchableOpacity>
+              {/* ================================================================ */}
+              
+          </View>
+      </SafeAreaView>
   );
 }
 

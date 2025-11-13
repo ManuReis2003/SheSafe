@@ -8,8 +8,12 @@
     "scheme": "shesafe",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
+    "ios": {  
+      "supportsTablet": true,
+      "bundleIdentifier": "com.shesafe.app",
+      "config": {
+        "googleMapsApiKey": "AIzaSyB3dk7MnvgdmvUyVTcifE_zhhdtYu_1osoI"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +23,13 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.shesafe.app",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyB3dk7MnvgdmvUyVTcifE_zhhdtYu_1oso"
+        }
+      }
     },
     "web": {
       "output": "static",

@@ -6,7 +6,7 @@ import Svg, { Line, Path } from 'react-native-svg'; // Adicionado 'Line' para o 
 // ================================================================
 // 1. IMPORTAR AS FUNÇÕES DO FIREBASECONFIG.JS
 // ================================================================
-import { auth, createUserWithEmailAndPassword, db, doc, setDoc } from './firebaseConfig';
+import { auth, createUserWithEmailAndPassword, db, doc, setDoc } from '../firebaseConfig';
 // ================================================================
 
 

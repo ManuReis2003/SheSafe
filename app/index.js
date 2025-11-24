@@ -17,7 +17,7 @@ import Svg, { Path } from 'react-native-svg';
 // ================================================================
 // 2. IMPORTAR FUNÇÕES DE LOGIN DO FIREBASE
 // ================================================================
-import { auth, signInWithEmailAndPassword } from './firebaseConfig';
+import { auth, signInWithEmailAndPassword } from '../firebaseConfig';
 // ================================================================
 
 

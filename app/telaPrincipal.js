@@ -1,21 +1,15 @@
-// Importações necessárias do React e React Native
-import {
-  Alert, Platform, SafeAreaView,
-  StatusBar, StyleSheet,
-  Text, TouchableOpacity, View
-} from 'react-native';
-// O Svg nos permite desenhar os ícones diretamente no código
+import { useRouter } from 'expo-router';
+import { Alert, Linking, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-// 1. IMPORTAÇÃO DO ROUTER -> para levar até as outras telas
-// ================================================================
-import { useRouter } from 'expo-router';
-// ================================================================
+// 🔧 ALTERAÇÃO — IMPORTA O HOOK DOS CONTATOS
+import { useContatos } from './useContatos';
 
 
-// --- COMPONENTES DE ÍCONES (SVG) ---
-// Para não depender de arquivos externos, desenhamos os ícones aqui.
-
+// --------------------------------------
+// ÍCONES SVG
+// --------------------------------------
 const LockIcon = () => (
   <Svg height="60" width="60" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1">
     <Path d="M12 1.5A5.5 5.5 0 006.5 7v3.5H6a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2v-7a2 2 0 00-2-2h-.5V7A5.5 5.5 0 0012 1.5z" />
@@ -38,12 +32,6 @@ const UserIcon = ({ focused }) => (
   </Svg>
 );
 
-const SmallLockIcon = ({ focused }) => (
-  <Svg height="28" width="28" viewBox="0 0 24 24" fill="none" stroke={focused ? "#7C1B32" : "#555"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <Path d="M16 11V7a4 4 0 00-8 0v4M5 11h14v10H5z" />
-  </Svg>
-);
-
 const LocationIcon = ({ focused }) => (
   <Svg height="28" width="28" viewBox="0 0 24 24" fill="none" stroke={focused ? "#7C1B32" : "#555"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <Path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1118 0z" />
@@ -51,181 +39,146 @@ const LocationIcon = ({ focused }) => (
   </Svg>
 );
 
-
-// --- COMPONENTE PRINCIPAL DA TELA --- subtituido pela funcao abaixo para linkar ao mapa
-//export default function App() {
-
-export default function TelaPrincipal() { 
-
-  // ================================================================
-  // 2. INICIALIZAR O ROUTER
-  // ================================================================
+// --------------------------------------
+// COMPONENTE PRINCIPAL
+// --------------------------------------
+export default function TelaPrincipal() {
   const router = useRouter();
-  // ================================================================
 
+  // 🔧 ALTERAÇÃO — PEGAR CONTATOS DO FIRESTORE
+  const contatos = useContatos();
 
-  // --- FUNÇÕES DE ALERTA ---
-  // Cada botão principal chama uma dessas funções ao ser pressionado.
-  // O Alert nativo do React Native não permite estilizar palavras específicas
-  // (como colocar em vermelho), então usamos caixa alta para dar destaque.
+  // 🔧 ALTERAÇÃO — FUNÇÃO QUE ENVIA PARA TODOS OS CONTATOS VIA WHATSAPP
+  const enviarWhatsappParaContatos = async (mensagem) => {
+
+    if (!contatos || contatos.length === 0) {
+      Alert.alert("Não existem contatos de confiança na sua lista.");
+      return;
+    }
+
+    contatos.forEach((contato) => {
+      const telefone = contato.telefone.replace(/\D/g, ""); // limpa caracteres
+
+      const url = `whatsapp://send?phone=55${telefone}&text=${encodeURIComponent(mensagem)}`;
+
+      Linking.openURL(url).catch(() => {
+        Alert.alert("Erro", "Não foi possível abrir o WhatsApp.");
+      });
+    });
+
+    Alert.alert("Notificação enviada para todos os contatos.");
+  };
+
+  // --------------------------------------
+  // Funções dos botões
+  // --------------------------------------
   const handleEmergencia = () => {
-    Alert.alert(
-      "Alerta Enviado",
-      "Uma notificação de EMERGÊNCIA foi enviada para seus contatos definidos."
-    );
+    enviarWhatsappParaContatos("🚨 EMERGÊNCIA! Preciso de ajuda IMEDIATA! Por favor, entre em contato comigo.");
   };
 
   const handleRisco = () => {
-    Alert.alert(
-      "Alerta Enviado",
-      "Uma notificação de RISCO foi enviada para seus contatos definidos."
-    );
+    enviarWhatsappParaContatos("⚠️ Estou em uma situação de RISCO. Fique atento, por favor.");
   };
 
   const handleAcompanhamento = () => {
-    Alert.alert(
-      "Alerta Enviado",
-      "Uma notificação de ACOMPANHE-ME foi enviada para seus contatos definidos."
-    );
+    enviarWhatsappParaContatos("👣 Preciso que você me acompanhe. Pode monitorar minha situação?");
   };
 
-  // --- RENDERIZAÇÃO DA TELA ---
-return (
-  // SafeAreaView garante que o conteúdo não fique sob a barra de status ou notch
-  <SafeAreaView style={styles.container}>
-    <StatusBar barStyle="dark-content" />
-    {/* Container principal que centraliza o conteúdo */}
-    <View style={styles.mainContent}>
-      {/* Logo e Nome do App */}
-      <View style={styles.logoContainer}>
-        <LockIcon />
-        <Text style={styles.appName}>SheSafe</Text>
+  // --------------------------------------
+  // RENDERIZAÇÃO DA TELA
+  // --------------------------------------
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+
+      <View style={styles.mainContent}>
+
+        <View style={styles.logoContainer}>
+          <LockIcon />
+          <Text style={styles.appName}>SheSafe</Text>
+        </View>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={[styles.button, styles.emergenciaButton]} onPress={handleEmergencia}>
+            <Text style={styles.buttonText}>Emergência</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.button, styles.riscoButton]} onPress={handleRisco}>
+            <Text style={styles.buttonText}>Estou em risco</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.button, styles.acompanheButton]} onPress={handleAcompanhamento}>
+            <Text style={styles.buttonText}>Acompanhe-me</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      {/* Container dos Botões de Ação */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={[styles.button, styles.emergenciaButton]} onPress={handleEmergencia}>
-          <Text style={styles.buttonText}>Emergência</Text>
+
+      {/* NAVBAR */}
+      <View style={styles.navBar}>
+        <TouchableOpacity style={styles.navButton}>
+          <HomeIcon focused={true} />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.riscoButton]} onPress={handleRisco}>
-          <Text style={styles.buttonText}>Estou em risco</Text>
+
+        <TouchableOpacity style={styles.navButton} onPress={() => router.push('/contatos')}>
+          <UserIcon />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.acompanheButton]} onPress={handleAcompanhamento}>
-          <Text style={styles.buttonText}>Acompanhe-me</Text>
+
+        <TouchableOpacity style={styles.navButton} onPress={() => router.push('/mapa')}>
+          <LocationIcon />
         </TouchableOpacity>
       </View>
-    </View>
-          {/* Barra de Navegação Inferior */}
-          <View style={styles.navBar}>
-              <TouchableOpacity style={styles.navButton} onPress={() => Alert.alert("Navegação", "Indo para a tela inicial.")}>
-                  <HomeIcon focused={true} />
-              </TouchableOpacity>
-
-              {/* 
-              <TouchableOpacity style={styles.navButton} onPress={() => Alert.alert("Navegação", "Indo para a tela de perfil.")}>
-                  <UserIcon />
-              </TouchableOpacity>
-              */}
-
-              {/*Lugar na barra de navegacao inferior que leva a tela de cadastro dos contatos de confianca quando clica no "icone de pessoa" */}
-
-              <TouchableOpacity style={styles.navButton} onPress={() => router.push('/contatos')}>
-                  <UserIcon />
-              </TouchableOpacity>
-              {/* ================================================================ */}
-              {/* 3. ALTERAR O ONPRESS DO BOTÃO DE MAPA */}
-              {/* ================================================================ */}
-              <TouchableOpacity 
-                  style={styles.navButton} 
-                  // Substituímos o Alert.alert pela navegação real
-                  onPress={() => router.push('/mapa')}
-              >
-                  <LocationIcon />
-              </TouchableOpacity>
-              {/* ================================================================ */}
-              
-          </View>
-      </SafeAreaView>
+    </SafeAreaView>
   );
 }
 
-// --- ESTILOS DA TELA ---
+// --------------------------------------
+// ESTILOS
+// --------------------------------------
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF', // Fundo branco
-  },
-  mainContent: {
-    flex: 1, // Faz com que o conteúdo principal ocupe todo o espaço disponível, empurrando o navBar para baixo
-    justifyContent: 'center', // Centraliza o conteúdo (logo e botões) verticalmente
-    alignItems: 'center', // Centraliza o conteúdo horizontalmente
-    paddingHorizontal: 20, // Espaçamento nas laterais
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 40, // Espaço entre o logo e o primeiro botão
-  },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  mainContent: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
+  logoContainer: { alignItems: 'center', marginBottom: 40 },
   appName: {
     fontSize: 48,
-    // A fonte "Times New Roman" ou "Georgia" são boas alternativas para a fonte da imagem
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     fontWeight: '600',
-    color: '#000000',
-    marginTop: 10,
+    color: '#000',
+    marginTop: 10
   },
-  buttonContainer: {
-    width: '90%', // Define a largura do container dos botões
-  },
+
+  buttonContainer: { width: '90%' },
   button: {
     paddingVertical: 18,
-    borderRadius: 25, // Bordas bem arredondadas
-    marginBottom: 20, // Espaço entre os botões
-    alignItems: 'center', // Centraliza o texto dentro do botão
-    // Sombra para dar um efeito de profundidade
+    borderRadius: 25,
+    marginBottom: 20,
+    alignItems: 'center',
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5,
+    elevation: 5
   },
-  buttonText: {
-    color: '#000000', // Texto preto para melhor contraste
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  // Cores específicas para cada botão
-  emergenciaButton: {
-    backgroundColor: '#D9534F', // Vermelho
-  },
-  riscoButton: {
-    backgroundColor: '#E68A48', // Laranja
-  },
-  acompanheButton: {
-    backgroundColor: '#F0D177', // Amarelo
-  },
-  // Estilos da Barra de Navegação
+  buttonText: { color: '#000', fontSize: 18, fontWeight: 'bold' },
+
+  emergenciaButton: { backgroundColor: '#D9534F' },
+  riscoButton: { backgroundColor: '#E68A48' },
+  acompanheButton: { backgroundColor: '#F0D177' },
+
   navBar: {
-    flexDirection: 'row', // Alinha os ícones horizontalmente
-    justifyContent: 'space-around', // Distribui os ícones com espaço igual
-    backgroundColor: '#F2F2F2', // Fundo cinza claro
-    marginHorizontal: 20, // Margens laterais para o efeito "flutuante"
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#F2F2F2',
+    marginHorizontal: 20,
     marginBottom: 20,
-    borderRadius: 30, // Bordas arredondadas
-    paddingVertical: 15, // Espaçamento vertical interno
-    // Sombra para a barra de navegação
+    borderRadius: 30,
+    paddingVertical: 15,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: -1,
-    },
+    shadowOffset: { width: 0, height: -1 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 5,
+    elevation: 5
   },
   navButton: {
-    alignItems: 'center',
-  },
+    alignItems: 'center'
+  }
 });
-

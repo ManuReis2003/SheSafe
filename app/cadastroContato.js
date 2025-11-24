@@ -18,7 +18,7 @@ import Svg, { Line, Path } from 'react-native-svg';
 
 // Importar funções do Firebase
 // (Garante que 'collection' e 'addDoc' estão sendo exportados do firebaseConfig.js)
-import { addDoc, auth, collection, db } from './firebaseConfig';
+import { addDoc, auth, collection, db } from '../firebaseConfig';
 
 
 // Ícone de "Usuário" para o cabeçalho (agora com 'Line' importado)

@@ -1,8 +1,9 @@
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
-    FlatList, // Componente principal para listas com rolagem
+    FlatList,
     Platform,
     StatusBar,
     StyleSheet,
@@ -10,21 +11,50 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-// Importar o SafeAreaView correto
-import { useRouter } from 'expo-router';
 import { SafeAreaView as SafeContextView } from 'react-native-safe-area-context';
-import Svg, { Line, Path, Polyline } from 'react-native-svg'; // Importações de SVG adicionadas
+import Svg, { Line, Path, Polyline } from 'react-native-svg';
 
 // Importações do Firebase
-import { auth, collection, db, deleteDoc, doc, onSnapshot } from './firebaseConfig';
+import { auth, collection, db, deleteDoc, doc, onSnapshot } from '../firebaseConfig';
 
-// --- ÍCONES (Baseados no Protótipo) ---
+
+
+
+// --- FUNÇÃO CUSTOMIZADA PARA BUSCAR DADOS (USADA EM OUTRAS TELAS) ---
+// ======================================================================
+// CORREÇÃO: Foi adicionado o 'export' aqui!
+// ======================================================================
+export const useContatos = () => {
+    const [contatos, setContatos] = useState([]);
+    
+    useEffect(() => {
+        const user = auth.currentUser;
+        if (!user) return; 
+
+        const contatosRef = collection(db, 'usuarios', user.uid, 'contatos');
+
+        const unsubscribe = onSnapshot(contatosRef, (querySnapshot) => {
+            const listaDeContatos = [];
+            querySnapshot.forEach((doc) => {
+                // Inclui apenas nome e telefone
+                listaDeContatos.push({ nome: doc.data().nome, telefone: doc.data().telefone });
+            });
+            setContatos(listaDeContatos); 
+        }, (error) => {
+            console.error("Erro ao buscar contatos para o hook: ", error);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    return contatos;//Retorna a lista de contatos em tempo real
+};
 
 // Ícone de Cadeado Principal (do protótipo)
 const LockIcon = () => (
     <Svg height="60" width="60" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1">
-        <Path d="M12 1.5A5.5 5.5 0 006.5 7v3.5H6a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2v-7a2 2 0 00-2-2h-.5V7A5.5 5.5 0 0012 1.5z" />
-        <Path d="M12 12v3" /><Path d="M12 15a.5.5 0 100-1 .5.5 0 000 1z" fill="black" stroke="none" />
+        <Path d="M12 1.5A5.5 5.5 0 006.5 7v3.5H6a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2v-7a2 2 0 00-2-2h-.5V7A5.5 5.5 0 0012 1.5z"/>
+        <Path d="M12 12v3"/><Path d="M12 15a.5.5 0 100-1 .5.5 0 000 1z" fill="black" stroke="none"/>
     </Svg>
 );
 
@@ -68,7 +98,7 @@ const UserNavIcon = ({ focused }) => (
     </Svg>
 );
 const SmallLockIcon = ({ focused }) => (
-    <Svg height="28" width="28" viewBox="0 0 24 24" fill="none" stroke={focused ? "#7C1B32" : "#555"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <Svg height="28" width="28" viewBox="0 0 24 24" fill={focused ? "#7C1B32" : "none"} stroke={focused ? "#7C1B32" : "#555"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <Path d="M16 11V7a4 4 0 00-8 0v4M5 11h14v10H5z"/>
     </Svg>
 );
@@ -79,11 +109,14 @@ const LocationIcon = ({ focused }) => (
     </Svg>
 );
 
+// Componente da tela de Lista de Contatos
 export default function ContatosScreen() {
     const router = useRouter(); 
+
     const [contatos, setContatos] = useState([]);
     const [loading, setLoading] = useState(true); 
 
+    // LÓGICA DE LEITURA DO FIRESTORE (TEMPO REAL)
     useEffect(() => {
         const user = auth.currentUser;
         if (!user) {
@@ -108,8 +141,11 @@ export default function ContatosScreen() {
         });
 
         return () => unsubscribe();
+        
     }, []); 
 
+    
+    // LÓGICA PARA DELETAR UM CONTATO
     const handleDeletarContato = (contatoId, contatoNome) => {
         Alert.alert(
             "Excluir Contato",
@@ -135,6 +171,10 @@ export default function ContatosScreen() {
         );
     };
 
+
+    
+
+    // Componente para renderizar cada item na lista
     const ItemContato = ({ nome, relacao, id }) => (
         <View style={styles.itemContainer}>
             <ListUserIcon/>
@@ -152,8 +192,8 @@ export default function ContatosScreen() {
     const secondaryColor = '#d9c7d0'; 
 
     return (
+        // Usando o SafeContextView (o SafeAreaView correto)
         <SafeContextView style={styles.safeArea}>
-            {/* Usando o SafeContextView (o SafeAreaView correto) */}
             <StatusBar barStyle="dark-content"/>
             
             <View style={styles.container}>
@@ -166,7 +206,9 @@ export default function ContatosScreen() {
                 {/* Botão Adicionar Novo Contato (Linkado) */}
                 <TouchableOpacity 
                     style={[styles.addButton, { backgroundColor: secondaryColor }]}
+                    //NAVEGAÇÃO para a tela que já criamos
                     onPress={() => router.push('/cadastroContato')}>
+
                     <UserPlusIcon color={mainColor}/>
                     <Text style={styles.addButtonText}>Adicionar novo contato</Text>
                 </TouchableOpacity>
@@ -184,6 +226,7 @@ export default function ContatosScreen() {
                         )}
                         keyExtractor={(item) => item.id}
                         style={styles.list}
+                        // Mensagem se a lista estiver vazia
                         ListEmptyComponent={() => (
                             <Text style={styles.emptyText}>Sua lista de contatos está vazia.</Text>
                         )}
@@ -197,8 +240,8 @@ export default function ContatosScreen() {
                     <HomeIcon/>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.navButton}>
-                    <UserNavIcon focused={true} /> {/* Focado aqui */}
+                <TouchableOpacity style={styles.navButton} onPress={() => { /* Já estamos aqui */ }}>
+                    <UserNavIcon focused={true}/> {/* Focado aqui */}
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.navButton} onPress={() => router.push('/mapa')}>
@@ -270,7 +313,7 @@ const styles = StyleSheet.create({
         borderBottomColor: '#eee',
     },
     itemInfo: {
-        flex: 1,
+        flex: 1, // Ocupa o espaço entre os ícones
         marginLeft: 15,
     },
     itemNome: {

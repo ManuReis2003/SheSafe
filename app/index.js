@@ -23,7 +23,7 @@ import { auth, signInWithEmailAndPassword } from '../firebaseConfig';
 
 // Ícone do Cadeado (SVG)
 const LockIcon = () => (
-    <Svg height="60" width="60" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1">
+    <Svg height="80" width="80" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1">
         <Path d="M12 1.5A5.5 5.5 0 006.5 7v3.5H6a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2v-7a2 2 0 00-2-2h-.5V7A5.5 5.5 0 0012 1.5z" />
         <Path d="M12 12v3" /><Path d="M12 15a.5.5 0 100-1 .5.5 0 000 1z" fill="black" stroke="none" />
     </Svg>
@@ -165,20 +165,21 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'center', // Centraliza o conteúdo
+        justifyContent: 'flex-start', //'flex-start' para poder controlar a distância do topo
+        paddingTop: 60,
         paddingHorizontal: 30,
         paddingBottom: 20, // Garante espaço para o rodapé
     },
     logoContainer: {
         alignItems: 'center',
-        marginBottom: 30,
+        marginBottom: 40,
     },
     appName: {
-        fontSize: 48,
+        fontSize: 60,
         fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
         fontWeight: '600',
         color: '#000000',
-        marginTop: 10,
+        marginTop: 5,
     },
     input: {
         width: '100%',
@@ -206,6 +207,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 5.46,
         elevation: 10,
+        marginTop: 10, // Pequeno espaçamento extra antes do botão entrar
     },
     buttonText: {
         color: 'white',

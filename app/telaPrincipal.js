@@ -1,10 +1,14 @@
+import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Alert, Linking, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-// 🔧 ALTERAÇÃO — IMPORTA O HOOK DOS CONTATOS
-import { useContatos } from './useContatos';
+// Importação do pacote de localização
+import * as Location from 'expo-location';
+
+// 🔧 CORREÇÃO DE IMPORTAÇÃO: O hook costuma estar no arquivo contatos.js
+import { useContatos } from './useContatos'; 
 
 
 // --------------------------------------
@@ -44,44 +48,83 @@ const LocationIcon = ({ focused }) => (
 // --------------------------------------
 export default function TelaPrincipal() {
   const router = useRouter();
-
-  // 🔧 ALTERAÇÃO — PEGAR CONTATOS DO FIRESTORE
   const contatos = useContatos();
+  
+  // Estado para mostrar carregamento enquanto busca o GPS
+  const [loading, setLoading] = useState(false);
 
-  // 🔧 ALTERAÇÃO — FUNÇÃO QUE ENVIA PARA TODOS OS CONTATOS VIA WHATSAPP
-  const enviarWhatsappParaContatos = async (mensagem) => {
+  // --- FUNÇÃO PARA PEGAR LOCALIZAÇÃO ---
+  const obterLocalizacao = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permissão negada', 'Precisamos da sua localização para enviar o alerta.');
+      return null;
+    }
 
+    try {
+      // Pega a posição atual (precisão alta)
+      let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      return location.coords;
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível obter sua localização.');
+      return null;
+    }
+  };
+
+  // --- FUNÇÃO DE ENVIO ---
+  const enviarWhatsappParaContatos = async (mensagemBase, incluirLocalizacao = false) => {
     if (!contatos || contatos.length === 0) {
-      Alert.alert("Não existem contatos de confiança na sua lista.");
+      Alert.alert("Atenção", "Não existem contatos de confiança na sua lista, favor adicionar.");
+      router.push('/contatos');
       return;
     }
 
-    contatos.forEach((contato) => {
-      const telefone = contato.telefone.replace(/\D/g, ""); // limpa caracteres
+    setLoading(true); // Inicia loading
 
-      const url = `whatsapp://send?phone=55${telefone}&text=${encodeURIComponent(mensagem)}`;
+    let mensagemFinal = mensagemBase;
 
-      Linking.openURL(url).catch(() => {
-        Alert.alert("Erro", "Não foi possível abrir o WhatsApp.");
+    // Se for para incluir localização, busca o GPS
+    if (incluirLocalizacao) {
+        const coords = await obterLocalizacao();
+        if (coords) {
+            // Cria um link do Google Maps
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}`;
+            mensagemFinal += `\n\nMinha localização atual:\n${mapLink}`;
+        }
+    }
+
+    // Envia para cada contato
+    // Nota: O WhatsApp só consegue abrir um chat por vez. 
+    // Se tiver muitos contatos, o ideal seria criar um grupo ou usar SMS.
+    // Aqui, ele tentará abrir o último ou criar uma sequência.
+    for (const contato of contatos) {
+      const telefone = contato.telefone.replace(/\D/g, ""); 
+      const url = `whatsapp://send?phone=55${telefone}&text=${encodeURIComponent(mensagemFinal)}`;
+      
+      // Pequeno delay para garantir que o sistema processe
+      await Linking.openURL(url).catch(() => {
+        Alert.alert("Erro", `Não foi possível abrir o WhatsApp para ${contato.nome}.`);
       });
-    });
+    }
 
-    Alert.alert("Notificação enviada para todos os contatos.");
+    setLoading(false); // Para loading
   };
 
   // --------------------------------------
   // Funções dos botões
   // --------------------------------------
   const handleEmergencia = () => {
-    enviarWhatsappParaContatos("🚨 EMERGÊNCIA! Preciso de ajuda IMEDIATA! Por favor, entre em contato comigo.");
+    // Emergência sempre envia localização
+    enviarWhatsappParaContatos("🚨 EMERGÊNCIA! Preciso de ajuda IMEDIATA! Por favor, entre em contato comigo.", true);
   };
 
   const handleRisco = () => {
-    enviarWhatsappParaContatos("⚠️ Estou em uma situação de RISCO. Fique atento, por favor.");
+    enviarWhatsappParaContatos("⚠️ Estou em uma situação de RISCO. Fique atento, por favor.", true);
   };
 
   const handleAcompanhamento = () => {
-    enviarWhatsappParaContatos("👣 Preciso que você me acompanhe. Pode monitorar minha situação?");
+    // Acompanhe-me foca na localização
+    enviarWhatsappParaContatos("👣 Preciso que você me acompanhe. Aqui está minha localização:", true);
   };
 
   // --------------------------------------
@@ -90,6 +133,14 @@ export default function TelaPrincipal() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
+
+      {/* Loading Overlay (aparece quando está buscando GPS) */}
+      {loading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#7C1B32" />
+          <Text style={{marginTop: 10}}>Buscando localização...</Text>
+        </View>
+      )}
 
       <View style={styles.mainContent}>
 
@@ -180,5 +231,14 @@ const styles = StyleSheet.create({
   },
   navButton: {
     alignItems: 'center'
+  },
+  // Estilo para o loading flutuante
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999
   }
 });

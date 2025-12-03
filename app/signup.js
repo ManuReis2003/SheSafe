@@ -1,18 +1,30 @@
+import React, { useState } from 'react';
+// ================================================================
+// 1. IMPORTAR COMPONENTES DE RESPONSIVIDADE
+// ================================================================
+import { 
+    Platform, 
+    SafeAreaView, 
+    StatusBar, 
+    StyleSheet, 
+    Text, 
+    TextInput, 
+    TouchableOpacity, 
+    View, 
+    ActivityIndicator,
+    KeyboardAvoidingView, // Ajusta a tela com o teclado
+    ScrollView // Adiciona rolagem
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator, Platform, SafeAreaView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import Svg, { Line, Path } from 'react-native-svg'; // Adicionado 'Line' para o ícone EyeOff
+import Svg, { Path, Line } from 'react-native-svg';
 
-// ================================================================
-// 1. IMPORTAR AS FUNÇÕES DO FIREBASECONFIG.JS
-// ================================================================
-import { auth, createUserWithEmailAndPassword, db, doc, setDoc } from '../firebaseConfig';
-// ================================================================
+// Importar funções do Firebase
+import { auth, db, createUserWithEmailAndPassword, doc, setDoc } from '../firebaseConfig';
 
 
-// ================================================================
-// 2. ÍCONES DE VISIBILIDADE DE SENHA (NOVOS)
-// ================================================================
+// --- ÍCONES ---
+
+// Ícone de Olho Aberto
 const EyeIcon = () => (
     <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <Path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></Path>
@@ -20,16 +32,16 @@ const EyeIcon = () => (
     </Svg>
 );
 
+// Ícone de Olho Fechado
 const EyeOffIcon = () => (
     <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <Path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"></Path>
         <Line x1="1" y1="1" x2="23" y2="23"></Line>
     </Svg>
 );
-// ================================================================
 
 
-// Componente do Pop-up de Sucesso (mantido o mesmo)
+// Componente do Pop-up de Sucesso
 const SuccessModal = ({ isVisible, onClose, router }) => {
     if (!isVisible) return null;
     return (
@@ -51,61 +63,43 @@ const SuccessModal = ({ isVisible, onClose, router }) => {
     );
 };
 
-// Este é o componente da tela de Cadastro (Signup)
+// Componente da Tela de Cadastro
 export default function SignupScreen() {
     const router = useRouter(); 
 
-    // Estados para armazenar os dados do formulário
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
-    
-    // ================================================================
-    // 3. NOVOS ESTADOS PARA CONFIRMAÇÃO E VISIBILIDADE
-    // ================================================================
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    // ================================================================
 
     const [modalVisible, setModalVisible] = useState(false); 
     const [loading, setLoading] = useState(false); 
 
-    // Função que será chamada quando o botão "Cadastrar" for pressionado
     const handleSignup = async () => {
-        // ================================================================
-        // 4. ATUALIZAÇÃO DA VALIDAÇÃO
-        // ================================================================
-        // Validação básica (incluindo o novo campo)
         if (!name || !email || !phone || !password || !confirmPassword) {
             alert('Atenção: Por favor, preencha todos os campos.');
             return;
         }
 
-        // Validação de Senha (verificar se são iguais)
         if (password !== confirmPassword) {
             alert('Erro: As senhas não conferem.');
             return;
         }
 
-        // Validação de E-mail
         const emailRegex = /\S+@\S+\.\S+/;
         if (!emailRegex.test(email)) {
             alert('Atenção: Por favor, insira um e-mail válido (ex: usuaria@dominio.com).');
             return;
         }
         
-        // ================================================================
-
-        
         setLoading(true);
 
         try {
-            // 1. Crie o usuário no Firebase Authentication
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // 2. Salve os dados adicionais no Firestore (usando campos em português)
             await setDoc(doc(db, "usuarios", user.uid), {
                 nome: name,
                 telefone: phone,
@@ -137,133 +131,140 @@ export default function SignupScreen() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <View style={styles.container}>
-                
-                <View style={[styles.iconContainer, { marginTop: 40 }]}>
-                    <Svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke={mainColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <Path d="M12 2C9.243 2 7 4.243 7 7v3h-1c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2h-1V7c0-2.757-2.243-5-5-5zm0 2c1.654 0 3 1.346 3 3v3H9V7c0-1.654 1.346-3 3-3zm0 13c-1.104 0-2-.896-2-2s.896-2 2-2 2 .896 2 2-.896 2-2 2z"/>
-                    </Svg>
-                </View>
-
-                <Text style={styles.title}>Cadastro usuária</Text>
-                <View style={styles.divider} />
-
-                {/* Campos de Input */}
-                <TextInput
-                    style={[styles.input, { backgroundColor: secondaryColor }]}
-                    placeholder="Nome"
-                    value={name}
-                    onChangeText={setName}
-                />
-                <TextInput
-                    style={[styles.input, { backgroundColor: secondaryColor }]}
-                    placeholder="E-mail"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                />
-                <TextInput
-                    style={[styles.input, { backgroundColor: secondaryColor }]}
-                    placeholder="Telefone"
-                    value={phone}
-                    onChangeText={setPhone}
-                    keyboardType="phone-pad"
-                />
-                
-                {/* Campo Senha com Ícone */}
-                <View style={styles.passwordWrapper}>
-                    <TextInput
-                        style={[
-                            styles.input, 
-                            { 
-                                backgroundColor: secondaryColor, 
-                                textAlign: 'left', 
-                                paddingLeft: 20, 
-                                paddingRight: 60, 
-                                marginVertical: 0 
-                            }
-                        ]}
-                        placeholder="Senha"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry={!showPassword} 
-                    />
-                    <TouchableOpacity 
-                        style={styles.eyeIcon} 
-                        onPress={() => setShowPassword(!showPassword)}
-                    >
-                        {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                    </TouchableOpacity>
-                </View>
-
-                {/* Texto de Ajuda (Novo) */}
-                <Text style={styles.passwordHelper}>
-                    A senha deve ter pelo menos 6 caracteres.
-                </Text>
-
-                {/* Campo Confirmar Senha com Ícone (Novo) */}
-                <View style={styles.passwordWrapper}>
-                    <TextInput
-                        style={[
-                            styles.input, 
-                            { 
-                                backgroundColor: secondaryColor, 
-                                textAlign: 'left', 
-                                paddingLeft: 20, 
-                                paddingRight: 60,
-                                marginVertical: 0 
-                            }
-                        ]}
-                        placeholder="Confirme sua senha"
-                        value={confirmPassword}
-                        onChangeText={setConfirmPassword}
-                        secureTextEntry={!showPassword}
-                    />
-                    <TouchableOpacity 
-                        style={styles.eyeIcon} 
-                        onPress={() => setShowPassword(!showPassword)}
-                    >
-                        {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                    </TouchableOpacity>
-                </View>
-
-
-                {/* Botão de Cadastro */}
-                <TouchableOpacity 
-                    style={[styles.button, { backgroundColor: mainColor }]}
-                    onPress={handleSignup}
-                    disabled={loading}
+            {/* 2. ESTRUTURA RESPONSIVA: Envolve tudo com KeyboardAvoidingView e ScrollView */}
+            <KeyboardAvoidingView 
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1 }}
+            >
+                <ScrollView 
+                    contentContainerStyle={styles.scrollContainer}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
                 >
-                    {loading ? (
-                        <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                        <Text style={styles.buttonText}>Cadastrar</Text>
-                    )}
-                </TouchableOpacity>
+                    <View style={styles.container}>
+                        
+                        <View style={[styles.iconContainer, { marginTop: 20 }]}>
+                            <Svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke={mainColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <Path d="M12 2C9.243 2 7 4.243 7 7v3h-1c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2h-1V7c0-2.757-2.243-5-5-5zm0 2c1.654 0 3 1.346 3 3v3H9V7c0-1.654 1.346-3 3-3zm0 13c-1.104 0-2-.896-2-2s.896-2 2-2 2 .896 2 2-.896 2-2 2z"/>
+                            </Svg>
+                        </View>
 
-                {/* Link para Login */}
-                <TouchableOpacity 
-                    style={styles.loginLink}
-                    onPress={navigateToLogin}
-                >
-                    <Text style={styles.loginLinkText}>Login</Text>
-                </TouchableOpacity>
+                        <Text style={styles.title}>Cadastro usuária</Text>
+                        <View style={styles.divider} />
 
-                {/* ================================================================ */}
-                {/* CORREÇÃO DO RODAPÉ (REMOVIDO POSITION ABSOLUTE) */}
-                {/* ================================================================ */}
-                <View style={styles.footerTextContainer}>
-                    <Text style={styles.footerText}>
-                        Atenção! O aplicativo SheSafe é exclusivamente destinado às mulheres. Saiba mais sobre o SheSafe nas redes sociais. 
-                    </Text>
-                    <Text style={styles.footerHandle}>@SheSafe</Text>
-                </View>
-                {/* ================================================================ */}
+                        {/* Campos de Input */}
+                        <TextInput
+                            style={[styles.input, { backgroundColor: secondaryColor }]}
+                            placeholder="Nome"
+                            value={name}
+                            onChangeText={setName}
+                        />
+                        <TextInput
+                            style={[styles.input, { backgroundColor: secondaryColor }]}
+                            placeholder="E-mail"
+                            value={email}
+                            onChangeText={setEmail}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
+                        <TextInput
+                            style={[styles.input, { backgroundColor: secondaryColor }]}
+                            placeholder="Telefone"
+                            value={phone}
+                            onChangeText={setPhone}
+                            keyboardType="phone-pad"
+                        />
 
-            </View>
+                        {/* Senha */}
+                        <View style={styles.passwordWrapper}>
+                            <TextInput
+                                style={[
+                                    styles.input, 
+                                    { 
+                                        backgroundColor: secondaryColor, 
+                                        marginVertical: 0,
+                                        paddingRight: 50,
+                                        paddingLeft: 50,
+                                        textAlign: 'center' 
+                                    }
+                                ]}
+                                placeholder="Senha"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry={!showPassword} 
+                            />
+                            <TouchableOpacity 
+                                style={styles.eyeIcon} 
+                                onPress={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                            </TouchableOpacity>
+                        </View>
 
-            {/* Pop-up de Sucesso (Fixo) */}
+                        <Text style={styles.passwordHelper}>
+                            A senha deve ter pelo menos 6 caracteres.
+                        </Text>
+
+                        {/* Confirmar Senha */}
+                        <View style={styles.passwordWrapper}>
+                            <TextInput
+                                style={[
+                                    styles.input, 
+                                    { 
+                                        backgroundColor: secondaryColor, 
+                                        marginVertical: 0,
+                                        paddingRight: 50,
+                                        paddingLeft: 50,
+                                        textAlign: 'center' 
+                                    }
+                                ]}
+                                placeholder="Confirme sua senha"
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                secureTextEntry={!showPassword}
+                            />
+                            <TouchableOpacity 
+                                style={styles.eyeIcon} 
+                                onPress={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Botão de Cadastro */}
+                        <TouchableOpacity 
+                            style={[styles.button, { backgroundColor: mainColor }]}
+                            onPress={handleSignup}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={styles.buttonText}>Cadastrar</Text>
+                            )}
+                        </TouchableOpacity>
+
+                        {/* Link para Login */}
+                        <TouchableOpacity 
+                            style={styles.loginLink}
+                            onPress={navigateToLogin}
+                        >
+                            <Text style={styles.loginLinkText}>Login</Text>
+                        </TouchableOpacity>
+
+                        {/* 3. Rodapé movido para o fluxo normal (Relativo) */}
+                        <View style={styles.footerTextContainer}>
+                            <Text style={styles.footerText}>
+                                Atenção! O aplicativo SheSafe é exclusivamente destinado às mulheres. Saiba mais sobre o SheSafe nas redes sociais. 
+                            </Text>
+                            <Text style={styles.footerHandle}>@SheSafe</Text>
+                        </View>
+
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
+
+            {/* Pop-up de Sucesso */}
             <SuccessModal 
                 isVisible={modalVisible} 
                 onClose={() => setModalVisible(false)} 
@@ -273,20 +274,23 @@ export default function SignupScreen() {
     );
 }
 
-// Estilos de Componentes
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: '#000', 
     },
+    // Estilo para o ScrollView garantir que o conteúdo fique centralizado se houver espaço
+    scrollContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+    },
     container: {
-        flex: 1,
+        // Removemos flex: 1 para o scroll funcionar corretamente
         alignItems: 'center',
         backgroundColor: '#fff', 
         paddingHorizontal: 30, 
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 20 : 20, 
-        // PaddingBottom aumentado para garantir espaço para o rodapé em fluxo normal
-        paddingBottom: 40, 
+        paddingBottom: 20, 
+        width: '100%',
     },
     iconContainer: {
         marginBottom: 10,
@@ -309,7 +313,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         borderRadius: 30, 
         fontSize: 18,
-        marginVertical: 10, // Mantém a margem para os inputs normais
+        marginVertical: 10,
         textAlign: 'center',
         color: '#333',
         shadowColor: '#000',
@@ -334,9 +338,8 @@ const styles = StyleSheet.create({
     passwordHelper: {
         fontSize: 13,
         color: '#555',
-        textAlign: 'left',
+        textAlign: 'center', 
         width: '100%',
-        paddingLeft: 10, 
         marginTop: -5, 
         marginBottom: 10, 
     },
@@ -361,8 +364,7 @@ const styles = StyleSheet.create({
     },
     loginLink: {
         marginTop: 20,
-        // marginBottom diminuído para dar espaço ao rodapé
-        marginBottom: 20, 
+        marginBottom: 20,
     },
     loginLinkText: {
         color: '#6a0a25',
@@ -370,19 +372,14 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         textDecorationLine: 'underline',
     },
-    // ================================================================
-    // ESTILO DO RODAPÉ CORRIGIDO
-    // ================================================================
+    // Rodapé agora é relativo (flui com a lista)
     footerTextContainer: {
-        // position: 'absolute', // REMOVIDO
-        // bottom: 20,          // REMOVIDO
         width: '100%',
         alignItems: 'center',
         paddingHorizontal: 10,
-        // Adiciona margem para separá-lo do link de Login
-        marginTop: 10, 
+        marginTop: 10,
+        marginBottom: 10,
     },
-    // ================================================================
     footerText: {
         fontSize: 12,
         color: '#666',
@@ -394,7 +391,6 @@ const styles = StyleSheet.create({
         color: '#6a0a25',
         marginTop: 2,
     },
-    // Estilos do Modal (Sem alterações)
     modalOverlay: {
         position: 'absolute',
         top: 0,
@@ -412,6 +408,7 @@ const styles = StyleSheet.create({
         elevation: 15,
         borderBottomLeftRadius: 10,
         borderBottomRightRadius: 10,
+        zIndex: 1000, 
     },
     modalContent: {
         alignItems: 'center',

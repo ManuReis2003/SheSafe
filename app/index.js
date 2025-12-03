@@ -1,49 +1,53 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 // ================================================================
-// 1. CORREÇÃO DO SAFEAREADVIEW E ADIÇÃO DO ACTIVITYINDICATOR
+// 1. ADICIONAMOS KeyboardAvoidingView E ScrollView
 // ================================================================
-import {
-    ActivityIndicator, Alert,
-    Platform, StatusBar,
-    StyleSheet,
-    Text, TextInput, TouchableOpacity,
-    View
+import { 
+    View, Text, TextInput, TouchableOpacity, 
+    StyleSheet, Platform, StatusBar, ActivityIndicator, Alert,
+    KeyboardAvoidingView, ScrollView // <--- Importações novas
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// ================================================================
-import { useRouter } from 'expo-router';
-import Svg, { Path } from 'react-native-svg';
+import { useRouter } from 'expo-router'; 
 
-// ================================================================
-// 2. IMPORTAR FUNÇÕES DE LOGIN DO FIREBASE
-// ================================================================
+import Svg, { Path, Line } from 'react-native-svg';
+
 import { auth, signInWithEmailAndPassword } from '../firebaseConfig';
-// ================================================================
 
 
-// Ícone do Cadeado (SVG)
+// --- ÍCONES ---
+
 const LockIcon = () => (
-    <Svg height="80" width="80" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1">
+    <Svg height="60" width="60" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="1">
         <Path d="M12 1.5A5.5 5.5 0 006.5 7v3.5H6a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2v-7a2 2 0 00-2-2h-.5V7A5.5 5.5 0 0012 1.5z" />
         <Path d="M12 12v3" /><Path d="M12 15a.5.5 0 100-1 .5.5 0 000 1z" fill="black" stroke="none" />
     </Svg>
 );
 
-// Componente da Tela de Login (Rota principal "/")
+const EyeIcon = () => (
+    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></Path>
+        <Path d="M12 15a3 3 0 100-6 3 3 0 000 6z"></Path>
+    </Svg>
+);
+
+const EyeOffIcon = () => (
+    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"></Path>
+        <Line x1="1" y1="1" x2="23" y2="23"></Line>
+    </Svg>
+);
+
+
+// Componente da Tela de Login
 export default function LoginScreen() {
     const router = useRouter(); 
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    // ================================================================
-    // 3. ESTADO DE CARREGAMENTO (LOADING)
-    // ================================================================
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    // ================================================================
 
-    // ================================================================
-    // 4. FUNÇÃO DE LOGIN REAL (handleLogin ATUALIZADA)
-    // ================================================================
     const handleLogin = async () => {
         if (!email || !password) {
             Alert.alert("Atenção", "Por favor, preencha o E-mail e a Senha.");
@@ -53,15 +57,10 @@ export default function LoginScreen() {
         setLoading(true);
 
         try {
-            // Tenta fazer o login com o Firebase Auth
             await signInWithEmailAndPassword(auth, email, password);
-            
-            // Sucesso! Navega para a tela principal
             router.replace('/telaPrincipal');
-
         } catch (error) {
             console.error("Erro no Login:", error.code);
-            // Trata erros comuns de login
             if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
                 Alert.alert("Erro", "E-mail ou senha inválidos.");
             } else if (error.code === 'auth/invalid-email') {
@@ -73,113 +72,141 @@ export default function LoginScreen() {
             setLoading(false);
         }
     };
-    // ================================================================
 
-
-    // A cor principal (vinho/borgonha) e a cor secundária (rosa claro/pêssego) do protótipo
     const mainColor = '#6a0a25'; 
     const secondaryColor = '#d9c7d0'; 
 
     return (
-        // Corrigido para o novo SafeAreaView
         <SafeAreaView style={styles.safeArea}>
             <StatusBar barStyle="dark-content" />
-            <View style={styles.container}>
-                
-                {/* Logo e Nome do App */}
-                <View style={styles.logoContainer}>
-                    <LockIcon />
-                    <Text style={styles.appName}>SheSafe</Text>
-                </View>
-
-                {/* Campos de Input */}
-                <TextInput
-                    style={[styles.input, { backgroundColor: secondaryColor }]}
-                    placeholder="E-mail"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                />
-                <TextInput
-                    style={[styles.input, { backgroundColor: secondaryColor }]}
-                    placeholder="Senha"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry // Esconde o texto digitado
-                />
-
-                {/* Botão Entrar */}
-                <TouchableOpacity 
-                    style={[styles.button, { backgroundColor: mainColor }]} 
-                    onPress={handleLogin}
-                    disabled={loading} // Desativa o botão durante o carregamento
+            
+            {/* 2. ESTRUTURA RESPONSIVA (KeyboardAvoidingView + ScrollView) */}
+            <KeyboardAvoidingView 
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1 }}
+            >
+                <ScrollView 
+                    contentContainerStyle={styles.scrollContainer}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
                 >
-                    {/* ================================================================ */}
-                    {/* 5. MOSTRAR "Entrando..." OU "Entrar" */}
-                    {/* ================================================================ */}
-                    {loading ? (
-                        <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                        <Text style={styles.buttonText}>Entrar</Text>
-                    )}
-                    {/* ================================================================ */}
-                </TouchableOpacity>
-                
-                {/* Link: Esqueci a Senha */}
-                <TouchableOpacity 
-                    onPress={() => router.push('/recuperacaoSenha')}
-                    style={styles.forgotPasswordLink}
-                >
-                    <Text style={styles.forgotPasswordText}>Esqueci a senha</Text>
-                </TouchableOpacity>
+                    <View style={styles.container}>
+                        
+                        <View style={styles.logoContainer}>
+                            <LockIcon />
+                            <Text style={styles.appName}>SheSafe</Text>
+                        </View>
 
-                {/* Botão Novo Cadastro */}
-                <TouchableOpacity 
-                    style={[styles.button, styles.registerButton]}
-                    onPress={() => router.push('/signup')} // Navega para a tela de cadastro
-                >
-                    <Text style={[styles.buttonText, styles.registerButtonText]}>Fazer cadastro</Text>
-                </TouchableOpacity>
+                        {/* Input Email */}
+                        <TextInput
+                            style={[styles.input, { backgroundColor: secondaryColor }]}
+                            placeholder="E-mail"
+                            value={email}
+                            onChangeText={setEmail}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
+                        
+                        {/* Input Senha com Ícone */}
+                        <View style={styles.passwordWrapper}>
+                            <TextInput
+                                style={[
+                                    styles.input, 
+                                    { 
+                                        backgroundColor: secondaryColor, 
+                                        marginVertical: 0, 
+                                        paddingRight: 50,
+                                        paddingLeft: 50,
+                                        textAlign: 'center' 
+                                    }
+                                ]}
+                                placeholder="Senha"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry={!showPassword} 
+                            />
+                            
+                            <TouchableOpacity 
+                                style={styles.eyeIcon} 
+                                onPress={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                            </TouchableOpacity>
+                        </View>
 
-                {/* Rodapé */}
-                <View style={styles.footerTextContainer}>
-                    <Text style={styles.footerText}>
-                        O SheSafe é exclusivamente destinado às mulheres. 
-                        Saiba mais sobre o SheSafe nas redes sociais.
-                    </Text>
-                    <Text style={styles.footerHandle}>@SheSafe</Text>
-                </View>
+                        {/* Botão Entrar */}
+                        <TouchableOpacity 
+                            style={[styles.button, { backgroundColor: mainColor }]} 
+                            onPress={handleLogin}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={styles.buttonText}>Entrar</Text>
+                            )}
+                        </TouchableOpacity>
+                        
+                        {/* Links */}
+                        <TouchableOpacity 
+                            onPress={() => router.push('/recuperacaoSenha')}
+                            style={styles.forgotPasswordLink}
+                        >
+                            <Text style={styles.forgotPasswordText}>Esqueci a senha</Text>
+                        </TouchableOpacity>
 
-            </View>
+                        <TouchableOpacity 
+                            style={[styles.button, styles.registerButton]}
+                            onPress={() => router.push('/signup')}
+                        >
+                            <Text style={[styles.buttonText, styles.registerButtonText]}>Fazer cadastro</Text>
+                        </TouchableOpacity>
+
+                        {/* Rodapé agora faz parte do fluxo, não sobrepõe */}
+                        <View style={styles.footerTextContainer}>
+                            <Text style={styles.footerText}>
+                                O SheSafe é exclusivamente destinado às mulheres. 
+                                Saiba mais sobre o SheSafe nas redes sociais.
+                            </Text>
+                            <Text style={styles.footerHandle}>@SheSafe</Text>
+                        </View>
+
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }
 
-// --- ESTILOS DA TELA (Atualizados) ---
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#fff', // Fundo branco
+        backgroundColor: '#fff', 
+    },
+    // Estilo para o ScrollView centralizar o conteúdo quando houver espaço
+    scrollContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
     },
     container: {
-        flex: 1,
+        // Removemos flex: 1 daqui para o ScrollView funcionar
         alignItems: 'center',
-        justifyContent: 'flex-start', //'flex-start' para poder controlar a distância do topo
-        paddingTop: 60,
+        justifyContent: 'center', 
         paddingHorizontal: 30,
-        paddingBottom: 20, // Garante espaço para o rodapé
+        paddingBottom: 20, 
+        width: '100%',
     },
     logoContainer: {
         alignItems: 'center',
-        marginBottom: 40,
+        marginBottom: 30,
+        marginTop: 20, // Margem extra para telas pequenas
     },
     appName: {
-        fontSize: 60,
+        fontSize: 48,
         fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
         fontWeight: '600',
         color: '#000000',
-        marginTop: 5,
+        marginTop: 10,
     },
     input: {
         width: '100%',
@@ -188,7 +215,7 @@ const styles = StyleSheet.create({
         borderRadius: 30, 
         fontSize: 18,
         marginVertical: 10,
-        textAlign: 'center',
+        textAlign: 'center', 
         color: '#333',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -196,8 +223,21 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
     },
+    passwordWrapper: {
+        width: '100%',
+        position: 'relative', 
+        justifyContent: 'center',
+        marginVertical: 10, 
+    },
+    eyeIcon: {
+        position: 'absolute', 
+        right: 15, 
+        padding: 5, 
+        justifyContent: 'center',
+        height: '100%', 
+    },
     button: {
-        width: '100%', // Botões com largura total
+        width: '100%', 
         paddingVertical: 15,
         borderRadius: 30,
         alignItems: 'center',
@@ -207,7 +247,6 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 5.46,
         elevation: 10,
-        marginTop: 10, // Pequeno espaçamento extra antes do botão entrar
     },
     buttonText: {
         color: 'white',
@@ -215,19 +254,17 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
     },
-    // Botão de Cadastro (estilo secundário)
     registerButton: {
         marginTop: 15,
-        backgroundColor: '#fff', // Fundo branco
+        backgroundColor: '#fff', 
         borderWidth: 2,
-        borderColor: '#6a0a25', // Borda na cor principal
-        elevation: 5, // Sombra menor
+        borderColor: '#6a0a25', 
+        elevation: 5, 
     },
     registerButtonText: {
-        color: '#6a0a25', // Texto na cor principal
+        color: '#6a0a25', 
         fontSize: 18,
     },
-    // Link "Esqueci a Senha"
     forgotPasswordLink: {
         marginTop: 15,
         padding: 5,
@@ -238,13 +275,13 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         textDecorationLine: 'underline',
     },
-    // Rodapé
+    // Rodapé modificado para não ser absoluto
     footerTextContainer: {
-        position: 'absolute', 
-        bottom: 20,
         width: '100%',
         alignItems: 'center',
         paddingHorizontal: 10,
+        marginTop: 40, // Espaço seguro do último botão
+        marginBottom: 10,
     },
     footerText: {
         fontSize: 12,

@@ -33,8 +33,8 @@ __Gabriela Dias Alves:__ Implementação da interface do usuário ,Desenvolvimen
 
 ### Tecnologias utilizadas:
 * Vs Code
-* JavaScript
-* Banco de dados: MySQL. 
+* React Native
+* Banco de dados: Firebase. 
 * Ferramentas de versionamento: Git e Git Hub.
    
 
@@ -44,7 +44,9 @@ __Gabriela Dias Alves:__ Implementação da interface do usuário ,Desenvolvimen
 * Botões de Acompanhamento 
 * Mapa
 * Tela de contatos de confiança
-* Aba de notificações
+* Login
+* Cadastro
+* Recuperação de senha
   
 
 ## Levantamento de requisitos
@@ -82,7 +84,6 @@ O diagrama de casos de uso foi elaborado para representar as principais funciona
 
 A modelagem de banco de dados lógica é uma representação detalhada das entidades e relacionamentos do sistema, baseada na modelagem conceitual, mas com foco na estruturação das tabelas e na definição dos tipos de dados. Nessa fase, as entidades são transformadas em tabelas e os relacionamentos em chaves primárias e estrangeiras, proporcionando uma visão mais próxima da implementação, mas ainda sem considerar aspectos específicos de hardware e de desempenho.
 ![image](https://github.com/user-attachments/assets/97b657fc-d891-486e-8bac-6068d14fe276)
-
 
 
 

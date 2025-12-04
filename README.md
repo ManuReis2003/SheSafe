@@ -33,8 +33,8 @@ __Gabriela Dias Alves:__ Implementação da interface do usuário ,Desenvolvimen
 
 ### Tecnologias utilizadas:
 * Vs Code
-* JavaScript
-* Banco de dados: MySQL. 
+* React Native
+* Banco de dados: Firebase. 
 * Ferramentas de versionamento: Git e Git Hub.
    
 
@@ -44,7 +44,9 @@ __Gabriela Dias Alves:__ Implementação da interface do usuário ,Desenvolvimen
 * Botões de Acompanhamento 
 * Mapa
 * Tela de contatos de confiança
-* Aba de notificações
+* Login
+* Cadastro
+* Recuperação de senha
   
 
 ## Levantamento de requisitos
@@ -85,10 +87,17 @@ A modelagem de banco de dados lógica é uma representação detalhada das entid
 
 
 
-
 ##Modelagem de Banco de Dados Física
 
 A modelagem de banco de dados física detalha a implementação efetiva do banco de dados, considerando aspectos como a definição de tabelas, índices, restrições e normalização. Esta etapa visa otimizar a estrutura do banco de dados para garantir eficiência no armazenamento e no acesso aos dados, levando em conta o desempenho e as características específicas do sistema e do ambiente de execução.
 ![image](https://github.com/user-attachments/assets/16dfa7cb-7b39-4219-af3d-e744d0f48d22)
 
 >>>>>>> 98b40c464cf0b329c15081b03c380e32b0ce8aff
+
+## ⚖️ Licença e Direitos Autorais
+
+Este projeto foi desenvolvido para fins acadêmicos e sociais.
+**© 2025 SheSafe.**
+
+Este software é protegido por direitos autorais. O uso comercial, venda ou distribuição lucrativa deste código é estritamente proibido sem autorização prévia.
+

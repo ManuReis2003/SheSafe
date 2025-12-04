@@ -60,9 +60,9 @@ const LockIcon = () => (
 
 // Botão Adicionar (do protótipo)
 const UserPlusIcon = ({ color }) => (
-    <Svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <Svg width="24" height="30" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <Path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></Path>
-        <Path d="M8.5 7a4 4 0 100-8 4 4 0 000 8z"></Path>
+        <Path d="M8.5 7a4 4 0 100-8 4 4 0 000 8z"></Path> 
         <Line x1="20" y1="8" x2="20" y2="14"></Line>
         <Line x1="17" y1="11" x2="23" y2="11"></Line>
     </Svg>
@@ -204,11 +204,7 @@ export default function ContatosScreen() {
                 </View>
                 
                 {/* Botão Adicionar Novo Contato (Linkado) */}
-                <TouchableOpacity 
-                    style={[styles.addButton, { backgroundColor: secondaryColor }]}
-                    //NAVEGAÇÃO para a tela que já criamos
-                    onPress={() => router.push('/cadastroContato')}>
-
+                <TouchableOpacity style={[styles.addButton, { backgroundColor: secondaryColor }]}onPress={() => router.push('/cadastroContato')}>
                     <UserPlusIcon color={mainColor}/>
                     <Text style={styles.addButtonText}>Adicionar novo contato</Text>
                 </TouchableOpacity>
@@ -240,8 +236,8 @@ export default function ContatosScreen() {
                     <HomeIcon/>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.navButton} onPress={() => { /* Já estamos aqui */ }}>
-                    <UserNavIcon focused={true}/> {/* Focado aqui */}
+                <TouchableOpacity style={styles.navButton} onPress={() => {}}>
+                    <UserNavIcon focused={true}/>  
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.navButton} onPress={() => router.push('/mapa')}>
@@ -270,6 +266,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 32,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
         fontWeight: 'bold',
         color: '#333',
         marginTop: 5,

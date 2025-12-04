@@ -1,29 +1,31 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // ===== CORREÇÃO 1/3: Imports corretos do React Native =====
-import {
-    ActivityIndicator,
+import { 
+    Platform, 
+    StatusBar, 
+    StyleSheet, 
+    Text, 
+    TextInput, 
+    TouchableOpacity, 
+    View, 
+    ActivityIndicator, 
     Alert,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+    ScrollView // Adicionado ScrollView para garantir que o balão caiba na tela pequena
 } from 'react-native';
 // ===== CORREÇÃO 2/3: Importar SafeAreaView do 'safe-area-context' =====
-import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 // ===== CORREÇÃO 3/3: Importar 'Line' que estava faltando para o ícone =====
-import Svg, { Line, Path } from 'react-native-svg';
+import Svg, { Path, Line } from 'react-native-svg';
 
 // Importar funções do Firebase
-// (Garante que 'collection' e 'addDoc' estão sendo exportados do firebaseConfig.js)
-import { addDoc, auth, collection, db } from '../firebaseConfig';
+// ADICIONADO: onSnapshot para verificar quantos contatos já existem
+import { auth, db, collection, addDoc, onSnapshot } from '../firebaseConfig';
 
 
-// Ícone de "Usuário" para o cabeçalho (agora com 'Line' importado)
+// Ícone de "Usuário" para o cabeçalho
 const UserPlusIcon = ({ color }) => (
-    <Svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <Svg width="60" height="70" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <Path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></Path>
         <Path d="M8.5 7a4 4 0 100-8 4 4 0 000 8z"></Path>
         <Line x1="20" y1="8" x2="20" y2="14"></Line>
@@ -39,9 +41,28 @@ export default function CadastroContatoScreen() {
     // Estados para os campos do formulário
     const [nome, setNome] = useState('');
     const [telefone, setTelefone] = useState('');
-    const [relacao, setRelacao] = useState(''); // Ex: Mãe, Amiga, Irmã
+    const [relacao, setRelacao] = useState(''); 
     
     const [loading, setLoading] = useState(false); 
+    const [contatosCount, setContatosCount] = useState(0); // Estado para contar contatos
+
+    // -------------------------------------------------------------
+    // 1. EFEITO PARA CONTAR CONTATOS EXISTENTES
+    // -------------------------------------------------------------
+    useEffect(() => {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const contatosRef = collection(db, 'usuarios', user.uid, 'contatos');
+        
+        // Ouve em tempo real quantos contatos existem
+        const unsubscribe = onSnapshot(contatosRef, (snapshot) => {
+            setContatosCount(snapshot.size);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
 
     // Função para salvar o contato no Firestore
     const handleSalvarContato = async () => {
@@ -51,23 +72,31 @@ export default function CadastroContatoScreen() {
             return;
         }
 
+        // -------------------------------------------------------------
+        // 2. BLOQUEIO DE LIMITE (VERSÃO BETA)
+        // -------------------------------------------------------------
+        if (contatosCount >= 1) {
+            Alert.alert(
+                "ATENÇÃO!", 
+                "Prezada usuária, este projeto está na versão beta. Por esse motivo, só é possível adicionar 1 contato de confiança, devido ao envio manual das mensagens.\n\nA opção de adicionar +1 contato de confiança estará disponível em breve."
+            );
+            return;
+        }
+
         setLoading(true);
 
         // LÓGICA DE SALVAMENTO NO FIRESTORE
         try {
-            // Primeiro, pegamos o ID da usuária atualmente logada
             const user = auth.currentUser;
             if (!user) {
                 Alert.alert("Erro", "Você precisa estar logada para adicionar contatos.");
                 setLoading(false);
-                router.replace('/'); // Envia para o login se não estiver logada
+                router.replace('/'); 
                 return;
             }
 
-            // O caminho para a subcoleção é: 'usuarios' -> (ID da Usuária) -> 'contatos'
             const contatosRef = collection(db, 'usuarios', user.uid, 'contatos');
 
-            // Adicionamos o novo documento (contato) nessa subcoleção
             await addDoc(contatosRef, {
                 nome: nome,
                 telefone: telefone,
@@ -77,16 +106,14 @@ export default function CadastroContatoScreen() {
             setLoading(false);
             Alert.alert("Sucesso!", "Contato de confiança salvo.");
             
-            // Limpa os campos e volta para a tela anterior
             setNome('');
             setTelefone('');
             setRelacao('');
-            router.back(); // Volta para a tela de onde veio (ex: telaPrincipal)
+            router.back(); 
 
         } catch (error) {
             setLoading(false);
             console.error("Erro ao salvar contato:", error);
-            // Verifica se o erro é de permissão (que corrigimos nas regras)
             if (error.code === 'permission-denied') {
                  Alert.alert("Erro de Permissão", "Falha ao salvar. Verifique as regras do Firestore.");
             } else {
@@ -98,85 +125,99 @@ export default function CadastroContatoScreen() {
     const mainColor = '#6a0a25'; 
     const secondaryColor = '#d9c7d0'; 
 
+    // Texto do aviso para reuso
+    const avisoTexto = "Prezada usuária, este projeto está na versão beta. Por esse motivo, só é possível adicionar 1 contato de confiança, devido ao envio manual das mensagens.\nA opção de adicionar +1 contato de confiança estará disponível em breve.";
+
     return (
-        // Usando o SafeAreaView corrigido
         <SafeAreaView style={styles.safeArea}>
             <StatusBar barStyle="dark-content" />
-            <View style={styles.container}>
-                
-                <View style={[styles.iconContainer, { marginTop: 40 }]}>
-                    <UserPlusIcon color={mainColor} />
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <View style={styles.container}>
+                    
+                    <View style={[styles.iconContainer, { marginTop: 40 }]}>
+                        <UserPlusIcon color={mainColor} />
+                    </View>
+
+                    <Text style={styles.title}>Adicionar Contato</Text>
+                    <View style={styles.divider} />
+
+                    {/* Campos de Input */}
+                    <TextInput
+                        style={[styles.input, { backgroundColor: secondaryColor, textAlign: 'left', paddingLeft: 20 }]}
+                        placeholder="Nome do Contato"
+                        value={nome}
+                        onChangeText={setNome}
+                    />
+                    <TextInput
+                        style={[styles.input, { backgroundColor: secondaryColor, textAlign: 'left', paddingLeft: 20 }]}
+                        placeholder="Telefone (com DDD)"
+                        value={telefone}
+                        onChangeText={setTelefone}
+                        keyboardType="phone-pad"
+                    />
+                    <TextInput
+                        style={[styles.input, { backgroundColor: secondaryColor, textAlign: 'left', paddingLeft: 20 }]}
+                        placeholder="Relação (Ex: Mãe, Amiga...)"
+                        value={relacao}
+                        onChangeText={setRelacao}
+                    />
+
+                    {/* Botão de Salvar */}
+                    <TouchableOpacity 
+                        style={[styles.button, { backgroundColor: mainColor }]}
+                        onPress={handleSalvarContato}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={styles.buttonText}>Salvar Contato</Text>
+                        )}
+                    </TouchableOpacity>
+
+                    {/* ------------------------------------------------------------- */}
+                    {/* 3. BALÃO DE AVISO (VISUAL) */}
+                    {/* ------------------------------------------------------------- */}
+                    <View style={styles.warningBalloon}>
+                        <Text style={styles.warningTitle}>ATENÇÃO!</Text>
+                        <Text style={styles.warningText}>
+                            {avisoTexto}
+                        </Text>
+                    </View>
+
+                    {/* Link para Voltar */}
+                    <TouchableOpacity 
+                        style={styles.link}
+                        onPress={() => router.back()} 
+                    >
+                        <Text style={styles.linkText}>Cancelar</Text>
+                    </TouchableOpacity>
+
                 </View>
-
-                <Text style={styles.title}>Adicionar Contato</Text>
-                <View style={styles.divider}/>
-
-                {/* Campos de Input */}
-                <TextInput
-                    style={[styles.input, { backgroundColor: secondaryColor, textAlign: 'left', paddingLeft: 20 }]}
-                    placeholder="Nome do Contato"
-                    value={nome}
-                    onChangeText={setNome}
-                />
-                <TextInput
-                    style={[styles.input, { backgroundColor: secondaryColor, textAlign: 'left', paddingLeft: 20 }]}
-                    placeholder="Telefone (com DDD)"
-                    value={telefone}
-                    onChangeText={setTelefone}
-                    keyboardType="phone-pad"
-                />
-                <TextInput
-                    style={[styles.input, { backgroundColor: secondaryColor, textAlign: 'left', paddingLeft: 20 }]}
-                    placeholder="Relação (Ex: Mãe, Amiga...)"
-                    value={relacao}
-                    onChangeText={setRelacao}
-                />
-
-                {/* Botão de Salvar */}
-                <TouchableOpacity 
-                    style={[styles.button, { backgroundColor: mainColor }]}
-                    onPress={handleSalvarContato}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                        <Text style={styles.buttonText}>Salvar Contato</Text>
-                    )}
-                </TouchableOpacity>
-
-                {/* Link para Voltar */}
-                <TouchableOpacity 
-                    style={styles.link}
-                    onPress={() => router.back()} // Volta para a tela anterior
-                >
-                    <Text style={styles.linkText}>Cancelar</Text>
-                </TouchableOpacity>
-
-            </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
 
-// Estilos (baseados no signup.js para consistência)
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        // Corrigido para fundo branco, que é o padrão do app
         backgroundColor: '#fff', 
     },
+    scrollContainer: {
+        flexGrow: 1,
+    },
     container: {
-        flex: 1,
         alignItems: 'center',
-        backgroundColor: '#fff', 
         paddingHorizontal: 30, 
-        // Remove o padding do StatusBar pois o SafeAreaView cuida disso
+        paddingBottom: 40, 
     },
     iconContainer: {
         marginBottom: 10,
     },
     title: {
         fontSize: 28,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
         fontWeight: 'bold',
         color: '#333',
         marginTop: 10,
@@ -205,7 +246,7 @@ const styles = StyleSheet.create({
         width: '80%', 
         paddingVertical: 15,
         borderRadius: 30,
-        marginTop: 30, 
+        marginTop: 20, 
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
@@ -220,8 +261,32 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
     },
+    // Estilos do Balão de Aviso
+    warningBalloon: {
+        width: '100%',
+        backgroundColor: '#FADBD8', // Vermelho claro
+        borderColor: '#C0392B', // Vermelho vivo
+        borderWidth: 1.5,
+        borderRadius: 15,
+        padding: 15,
+        marginTop: 30,
+        marginBottom: 10,
+    },
+    warningTitle: {
+        color: '#C0392B',
+        fontWeight: 'bold',
+        fontSize: 16,
+        marginBottom: 5,
+        textAlign: 'center',
+    },
+    warningText: {
+        color: '#7C1B32', // Um tom escuro de vermelho/vinho para leitura
+        fontSize: 14,
+        textAlign: 'center',
+        lineHeight: 20,
+    },
     link: {
-        marginTop: 20,
+        marginTop: 10,
         marginBottom: 20, 
     },
     linkText: {

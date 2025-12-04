@@ -93,3 +93,11 @@ A modelagem de banco de dados física detalha a implementação efetiva do banco
 ![image](https://github.com/user-attachments/assets/16dfa7cb-7b39-4219-af3d-e744d0f48d22)
 
 >>>>>>> 98b40c464cf0b329c15081b03c380e32b0ce8aff
+
+## ⚖️ Licença e Direitos Autorais
+
+Este projeto foi desenvolvido para fins acadêmicos e sociais.
+**© 2025 SheSafe.**
+
+Este software é protegido por direitos autorais. O uso comercial, venda ou distribuição lucrativa deste código é estritamente proibido sem autorização prévia.
+
